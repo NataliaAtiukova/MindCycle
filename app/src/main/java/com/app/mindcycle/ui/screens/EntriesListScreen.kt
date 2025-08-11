@@ -14,9 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.app.mindcycle.R
 import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
@@ -35,12 +38,12 @@ private val moodIcons = mapOf(
 )
 
 private val moodLabels = mapOf(
-    MoodLevel.VERY_BAD to "Очень плохо",
-    MoodLevel.BAD to "Плохо",
-    MoodLevel.NEUTRAL to "Нейтрально",
-    MoodLevel.GOOD to "Хорошо",
-    MoodLevel.VERY_GOOD to "Очень хорошо",
-    MoodLevel.EXCELLENT to "Отлично"
+    MoodLevel.VERY_BAD to R.string.mood_very_bad,
+    MoodLevel.BAD to R.string.mood_bad,
+    MoodLevel.NEUTRAL to R.string.mood_neutral,
+    MoodLevel.GOOD to R.string.mood_good,
+    MoodLevel.VERY_GOOD to R.string.mood_very_good,
+    MoodLevel.EXCELLENT to R.string.mood_excellent
 )
 
 private val phaseIcons = mapOf(
@@ -53,12 +56,12 @@ private val phaseIcons = mapOf(
 )
 
 private val phaseLabels = mapOf(
-    CyclePhase.MENSTRUATION to "Менструация",
-    CyclePhase.FOLLICULAR to "Фолликулярная",
-    CyclePhase.OVULATION to "Овуляция",
-    CyclePhase.LUTEAL to "Лютеиновая",
-    CyclePhase.PMS to "ПМС",
-    CyclePhase.NONE to "Нет"
+    CyclePhase.MENSTRUATION to R.string.phase_menstruation,
+    CyclePhase.FOLLICULAR to R.string.phase_follicular,
+    CyclePhase.OVULATION to R.string.phase_ovulation,
+    CyclePhase.LUTEAL to R.string.phase_luteal,
+    CyclePhase.PMS to R.string.phase_pms,
+    CyclePhase.NONE to R.string.phase_none
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +79,7 @@ fun EntriesListScreen(
     ) {
         // Заголовок
         Text(
-            text = "Список записей",
+            text = stringResource(R.string.entries_list),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -101,31 +104,31 @@ fun EntriesListScreen(
                         
                         // Mood
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(moodIcons[entry.moodLevel] ?: Icons.Default.HelpOutline, contentDescription = "Mood", modifier = Modifier.padding(end = 8.dp))
-                            Text(moodLabels[entry.moodLevel] ?: entry.moodLevel.toString())
+                            Icon(moodIcons[entry.moodLevel] ?: Icons.Default.HelpOutline, contentDescription = stringResource(R.string.mood), modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(moodLabels[entry.moodLevel] ?: R.string.mood_unknown))
                         }
                         
                         // Cycle Phase
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(phaseIcons[entry.cyclePhase] ?: Icons.Default.HelpOutline, contentDescription = "Cycle Phase", modifier = Modifier.padding(end = 8.dp))
-                            Text(phaseLabels[entry.cyclePhase] ?: entry.cyclePhase.toString())
+                            Icon(phaseIcons[entry.cyclePhase] ?: Icons.Default.HelpOutline, contentDescription = stringResource(R.string.phase), modifier = Modifier.padding(end = 8.dp))
+                            Text(stringResource(phaseLabels[entry.cyclePhase] ?: R.string.phase_unknown))
                         }
 
                         if (entry.symptoms.isNotEmpty()) {
-                            Text("Симптомы: ${entry.symptoms.joinToString(", ")}")
+                            Text(stringResource(R.string.symptoms) + ": ${entry.symptoms.joinToString(", ")}")
                         }
                         if (!entry.note.isNullOrEmpty()) {
-                            Text("Заметки: ${entry.note}")
+                            Text(stringResource(R.string.notes) + ": ${entry.note}")
                         }
                         if (entry.isPeriodStart) {
-                            Text("Начало менструации")
+                            Text(stringResource(R.string.period_start))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = { onNavigateToEditEntry(entry.id) }
                             ) {
-                                Text("Редактировать")
+                                Text(stringResource(R.string.edit))
                             }
                             Button(
                                 onClick = { onDeleteEntry(entry) },
@@ -133,7 +136,7 @@ fun EntriesListScreen(
                                     containerColor = MaterialTheme.colorScheme.error
                                 )
                             ) {
-                                Text("Удалить")
+                                Text(stringResource(R.string.delete))
                             }
                         }
                     }
@@ -148,7 +151,7 @@ fun EntriesListScreen(
                 .fillMaxWidth()
                 .padding(top = 16.dp)
         ) {
-            Text("Назад")
+            Text(stringResource(R.string.back))
         }
     }
 }
@@ -196,14 +199,16 @@ private fun EntryCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = when (entry.cyclePhase) {
-                            CyclePhase.MENSTRUATION -> "Менструация"
-                            CyclePhase.FOLLICULAR -> "Фолликулярная фаза"
-                            CyclePhase.OVULATION -> "Овуляция"
-                            CyclePhase.LUTEAL -> "Лютеиновая фаза"
-                            CyclePhase.PMS -> "ПМС"
-                            CyclePhase.NONE -> "Не выбрано"
-                        },
+                        text = stringResource(
+                            when (entry.cyclePhase) {
+                                CyclePhase.MENSTRUATION -> R.string.phase_menstruation
+                                CyclePhase.FOLLICULAR -> R.string.phase_follicular
+                                CyclePhase.OVULATION -> R.string.phase_ovulation
+                                CyclePhase.LUTEAL -> R.string.phase_luteal
+                                CyclePhase.PMS -> R.string.phase_pms
+                                CyclePhase.NONE -> R.string.phase_none
+                            }
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -211,7 +216,7 @@ private fun EntryCard(
             }
             Icon(
                 imageVector = Icons.Default.Edit,
-                contentDescription = "Редактировать",
+                contentDescription = stringResource(R.string.edit),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
@@ -252,7 +257,7 @@ private fun EntryDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Настроение",
+                        stringResource(R.string.mood),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
@@ -277,25 +282,27 @@ private fun EntryDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Фаза цикла",
+                        stringResource(R.string.phase),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        when (entry.cyclePhase) {
-                            CyclePhase.MENSTRUATION -> "Менструация"
-                            CyclePhase.FOLLICULAR -> "Фолликулярная фаза"
-                            CyclePhase.OVULATION -> "Овуляция"
-                            CyclePhase.LUTEAL -> "Лютеиновая фаза"
-                            CyclePhase.PMS -> "ПМС"
-                            CyclePhase.NONE -> "Не выбрано"
-                        }
+                        stringResource(
+                            when (entry.cyclePhase) {
+                                CyclePhase.MENSTRUATION -> R.string.phase_menstruation
+                                CyclePhase.FOLLICULAR -> R.string.phase_follicular
+                                CyclePhase.OVULATION -> R.string.phase_ovulation
+                                CyclePhase.LUTEAL -> R.string.phase_luteal
+                                CyclePhase.PMS -> R.string.phase_pms
+                                CyclePhase.NONE -> R.string.phase_none
+                            }
+                        )
                     )
                 }
 
                 if (entry.symptoms.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Симптомы",
+                        stringResource(R.string.symptoms_label),
                         style = MaterialTheme.typography.titleMedium
                     )
                     entry.symptoms.forEach { symptom ->
@@ -309,7 +316,7 @@ private fun EntryDetailsDialog(
                 if (!entry.note.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Заметки",
+                        stringResource(R.string.notes_label_detail),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(entry.note)
@@ -327,7 +334,7 @@ private fun EntryDetailsDialog(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        "Редактировать",
+                        stringResource(R.string.edit),
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }

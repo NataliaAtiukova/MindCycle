@@ -7,7 +7,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
+import com.app.mindcycle.R
 import com.app.mindcycle.ads.YandexAdsManager
 import com.yandex.mobile.ads.banner.BannerAdView
 
@@ -37,7 +39,7 @@ fun AdBanner(
                 bannerAdView = bannerAdView,
                 onLoaded = onAdLoaded,
                 onFailed = { error ->
-                    onAdFailed?.invoke(error.description ?: "Ad failed to load")
+                                                    onAdFailed?.invoke(error.description ?: "Ad failed to load")
                 }
             )
         }

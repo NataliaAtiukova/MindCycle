@@ -1,3 +1,101 @@
 <resources>
     <string name="app_name">MindCycle: Отслеживание цикла</string>
+    
+    <!-- Navigation -->
+    <string name="calendar">Календарь</string>
+    <string name="add_entry">Добавить запись</string>
+    <string name="entries_list">Список записей</string>
+    <string name="symptoms_label">Симптомы</string>
+    <string name="notes_label_detail">Заметки</string>
+    
+    <!-- Calendar Screen -->
+    <string name="cycle_prediction">Предсказание цикла</string>
+    <string name="next_period">Следующая менструация</string>
+    <string name="ovulation">Овуляция</string>
+    <string name="average_cycle_length">Средняя длительность цикла</string>
+    <string name="days">дней</string>
+    <string name="statistics">Статистика</string>
+    <string name="total_entries">Всего записей</string>
+    <string name="average_mood">Среднее настроение</string>
+    
+    <!-- Mood Levels -->
+    <string name="mood_very_bad">Очень плохо</string>
+    <string name="mood_bad">Плохо</string>
+    <string name="mood_neutral">Нейтрально</string>
+    <string name="mood_good">Хорошо</string>
+    <string name="mood_very_good">Очень хорошо</string>
+    <string name="mood_excellent">Отлично</string>
+    <string name="mood_unknown">Неизвестно</string>
+    
+    <!-- Cycle Phases -->
+    <string name="phase_menstruation">Менструация</string>
+    <string name="phase_follicular">Фолликулярная</string>
+    <string name="phase_ovulation">Овуляция</string>
+    <string name="phase_luteal">Лютеиновая</string>
+    <string name="phase_pms">ПМС</string>
+    <string name="phase_none">Нет</string>
+    <string name="phase_unknown">Неизвестно</string>
+    
+    <!-- Add Entry Screen -->
+    <string name="save_entry">Сохранить запись</string>
+    <string name="delete_entry">Удалить запись</string>
+    <string name="date">Дата</string>
+    <string name="mood">Настроение</string>
+    <string name="cycle_phase">Фаза цикла</string>
+    <string name="phase">Фаза цикла</string>
+    <string name="symptoms">Симптомы</string>
+    <string name="notes">Заметки</string>
+    <string name="notes_label">Введите заметки</string>
+    <string name="select_symptoms">Выберите симптомы</string>
+    <string name="add_note">Добавить заметку</string>
+    <string name="entry_saved">Запись сохранена</string>
+    <string name="entry_deleted">Запись удалена</string>
+    <string name="error_saving">Ошибка при сохранении</string>
+    <string name="error_deleting">Ошибка при удалении</string>
+    <string name="period_start">Начало менструации</string>
+    <string name="period_start_label">Отметить как начало менструации</string>
+    <string name="example_period">Примерные дни менструации:</string>
+    <string name="next_cycle_expected">Следующий цикл ожидается:</string>
+    <string name="select_time">Выберите время</string>
+    <string name="hours">Часы</string>
+    <string name="minutes">Минуты</string>
+    <string name="save">Сохранить</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_fatigue">Усталость</string>
+    <string name="symptom_pain">Боль</string>
+    <string name="symptom_irritation">Раздражение</string>
+    <string name="symptom_anxiety">Тревога</string>
+    <string name="symptom_headache">Головная боль</string>
+    <string name="symptom_cramps">Спазмы</string>
+    <string name="symptom_bloating">Вздутие</string>
+    <string name="symptom_insomnia">Бессонница</string>
+    
+    <!-- Common -->
+    <string name="cancel">Отмена</string>
+    <string name="ok">ОК</string>
+    <string name="back">Назад</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete">Удалить</string>
+    <string name="loading">Загрузка...</string>
+    <string name="error">Ошибка</string>
+    <string name="success">Успешно</string>
+    <string name="error_loading_data">Ошибка загрузки данных</string>
+    <string name="ad_failed_to_load">Ошибка загрузки рекламы</string>
+    <string name="failed_to_load_data">Не удалось загрузить данные</string>
+    <string name="failed_to_add_entry">Не удалось добавить запись</string>
+    <string name="failed_to_delete_entry">Не удалось удалить запись</string>
+    
+    <!-- Calendar Screen Additional -->
+    <string name="next_month">Следующий месяц</string>
+    <string name="mon">Пн</string>
+    <string name="tue">Вт</string>
+    <string name="wed">Ср</string>
+    <string name="thu">Чт</string>
+    <string name="fri">Пт</string>
+    <string name="sat">Сб</string>
+    <string name="sun">Вс</string>
+    <string name="entry_details">Детали записи</string>
+    <string name="entry_for_date">Запись за %s</string>
+    <string name="close">Закрыть</string>
 </resources>

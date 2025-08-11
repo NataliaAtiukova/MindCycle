@@ -10,14 +10,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.app.mindcycle.R
 import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
@@ -75,14 +80,14 @@ fun AddEntryScreen(
     var showTimePicker by remember { mutableStateOf(false) }
 
     val symptomsList = listOf(
-        "Усталость" to Icons.Filled.BatteryAlert,
-        "Боль" to Icons.Filled.Healing,
-        "Раздражение" to Icons.Filled.MoodBad,
-        "Тревога" to Icons.Filled.SentimentDissatisfied,
-        "Головная боль" to Icons.Filled.Psychology,
-        "Спазмы" to Icons.Filled.FlashOn,
-        "Вздутие" to Icons.Filled.Air,
-        "Бессонница" to Icons.Filled.NightsStay
+        stringResource(R.string.symptom_fatigue) to Icons.Filled.BatteryAlert,
+        stringResource(R.string.symptom_pain) to Icons.Filled.Healing,
+        stringResource(R.string.symptom_irritation) to Icons.Filled.MoodBad,
+        stringResource(R.string.symptom_anxiety) to Icons.Filled.SentimentDissatisfied,
+        stringResource(R.string.symptom_headache) to Icons.Filled.Psychology,
+        stringResource(R.string.symptom_cramps) to Icons.Filled.FlashOn,
+        stringResource(R.string.symptom_bloating) to Icons.Filled.Air,
+        stringResource(R.string.symptom_insomnia) to Icons.Filled.NightsStay
     )
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = entryDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
@@ -94,163 +99,343 @@ fun AddEntryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Новая запись",
+                        if (entryToEdit != null) stringResource(R.string.edit) else stringResource(R.string.add_entry),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                actions = {
+                    if (entryToEdit != null) {
+                        IconButton(
+                            onClick = {
+                                // TODO: Implement delete functionality
+                            }
+                        ) {
+                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete))
+                        }
+                    }
+                }
             )
         }
-    ) { padding ->
+    ) { paddingValues ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                text = "Добавить запись",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Выбор настроения
-            Text("Настроение", style = MaterialTheme.typography.titleMedium)
-            FlowRow(
+            // Date and Time Section
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                val moodIcons = mapOf(
-                    MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
-                    MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
-                    MoodLevel.NEUTRAL to Icons.Filled.Psychology,
-                    MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
-                    MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
-                    MoodLevel.EXCELLENT to Icons.Filled.Star
-                )
-                val moodLabels = mapOf(
-                    MoodLevel.VERY_BAD to "Очень плохо",
-                    MoodLevel.BAD to "Плохо",
-                    MoodLevel.NEUTRAL to "Нейтрально",
-                    MoodLevel.GOOD to "Хорошо",
-                    MoodLevel.VERY_GOOD to "Очень хорошо",
-                    MoodLevel.EXCELLENT to "Отлично"
-                )
-                MoodLevel.values().forEach { mood ->
-                    FilterChip(
-                        selected = selectedMood == mood,
-                        onClick = { selectedMood = mood },
-                        label = { Text(moodLabels[mood] ?: mood.toString()) },
-                        leadingIcon = { Icon(moodIcons[mood] ?: Icons.Filled.Psychology, contentDescription = mood.toString()) }
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.date),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = entryDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Button(onClick = { showDatePicker = true }) {
+                            Text(stringResource(R.string.edit))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mood Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.mood),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val moodOptions = listOf(
+                        MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
+                        MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
+                        MoodLevel.NEUTRAL to Icons.Filled.Psychology,
+                        MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
+                        MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
+                        MoodLevel.EXCELLENT to Icons.Filled.Star
+                    )
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        moodOptions.forEach { (mood, icon) ->
+                            val isSelected = selectedMood == mood
+                            Row(
+                                modifier = Modifier
+                                    .selectable(
+                                        selected = isSelected,
+                                        onClick = { selectedMood = mood }
+                                    )
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surface
+                                    )
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(
+                                        when (mood) {
+                                            MoodLevel.VERY_BAD -> R.string.mood_very_bad
+                                            MoodLevel.BAD -> R.string.mood_bad
+                                            MoodLevel.NEUTRAL -> R.string.mood_neutral
+                                            MoodLevel.GOOD -> R.string.mood_good
+                                            MoodLevel.VERY_GOOD -> R.string.mood_very_good
+                                            MoodLevel.EXCELLENT -> R.string.mood_excellent
+                                        }
+                                    ),
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phase Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.phase),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val phaseOptions = listOf(
+                        CyclePhase.MENSTRUATION to Icons.Filled.Bloodtype,
+                        CyclePhase.FOLLICULAR to Icons.Filled.Spa,
+                        CyclePhase.OVULATION to Icons.Filled.WbSunny,
+                        CyclePhase.LUTEAL to Icons.Filled.Nightlight,
+                        CyclePhase.PMS to Icons.Filled.MoodBad,
+                        CyclePhase.NONE to Icons.Filled.RemoveCircle
+                    )
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        phaseOptions.forEach { (phase, icon) ->
+                            val isSelected = selectedPhase == phase
+                            Row(
+                                modifier = Modifier
+                                    .selectable(
+                                        selected = isSelected,
+                                        onClick = { selectedPhase = phase }
+                                    )
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surface
+                                    )
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(
+                                        when (phase) {
+                                            CyclePhase.MENSTRUATION -> R.string.phase_menstruation
+                                            CyclePhase.FOLLICULAR -> R.string.phase_follicular
+                                            CyclePhase.OVULATION -> R.string.phase_ovulation
+                                            CyclePhase.LUTEAL -> R.string.phase_luteal
+                                            CyclePhase.PMS -> R.string.phase_pms
+                                            CyclePhase.NONE -> R.string.phase_none
+                                        }
+                                    ),
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Symptoms Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.symptoms),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        symptomsList.forEach { (symptom, icon) ->
+                            val isSelected = selectedSymptoms.contains(symptom)
+                            Row(
+                                modifier = Modifier
+                                    .selectable(
+                                        selected = isSelected,
+                                        onClick = {
+                                            selectedSymptoms = if (selectedSymptoms.contains(symptom))
+                                                selectedSymptoms - symptom else selectedSymptoms + symptom
+                                        }
+                                    )
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surface
+                                    )
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = symptom,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Notes Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.notes),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = note,
+                        onValueChange = { note = it },
+                        label = { Text(stringResource(R.string.notes_label)) },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Выбор фазы цикла
-            Text("Фаза цикла", style = MaterialTheme.typography.titleMedium)
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val phaseIcons = mapOf(
-                    CyclePhase.MENSTRUATION to Icons.Filled.Bloodtype,
-                    CyclePhase.FOLLICULAR to Icons.Filled.Spa,
-                    CyclePhase.OVULATION to Icons.Filled.WbSunny,
-                    CyclePhase.LUTEAL to Icons.Filled.Nightlight,
-                    CyclePhase.PMS to Icons.Filled.MoodBad,
-                    CyclePhase.NONE to Icons.Filled.RemoveCircle
-                )
-                val phaseLabels = mapOf(
-                    CyclePhase.MENSTRUATION to "Менструация",
-                    CyclePhase.FOLLICULAR to "Фолликулярная",
-                    CyclePhase.OVULATION to "Овуляция",
-                    CyclePhase.LUTEAL to "Лютеиновая",
-                    CyclePhase.PMS to "ПМС",
-                    CyclePhase.NONE to "Нет"
-                )
-                CyclePhase.values().forEach { phase ->
-                    FilterChip(
-                        selected = selectedPhase == phase,
-                        onClick = { selectedPhase = phase },
-                        label = { Text(phaseLabels[phase] ?: phase.toString()) },
-                        leadingIcon = { Icon(phaseIcons[phase] ?: Icons.Filled.RemoveCircle, contentDescription = phase.toString()) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Симптомы
-            Text("Симптомы", style = MaterialTheme.typography.titleMedium)
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                symptomsList.forEach { (symptom, icon) ->
-                    FilterChip(
-                        selected = selectedSymptoms.contains(symptom),
-                        onClick = {
-                            selectedSymptoms = if (selectedSymptoms.contains(symptom))
-                                selectedSymptoms - symptom else selectedSymptoms + symptom
-                        },
-                        label = { Text(symptom) },
-                        leadingIcon = { Icon(icon, contentDescription = symptom) }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Заметки
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text("Заметки") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Переключатель начала менструации
-            Row(
+            // Period Start Toggle
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(if (isPeriodStart) Modifier.background(Color(0xFFFFCDD2), RoundedCornerShape(8.dp)) else Modifier),
-                verticalAlignment = Alignment.CenterVertically
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Text("Начало менструации")
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = isPeriodStart,
-                    onCheckedChange = { isPeriodStart = it }
-                )
-                if (isPeriodStart) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color.Red)
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.period_start),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = isPeriodStart,
+                                onClick = { isPeriodStart = !isPeriodStart }
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(stringResource(R.string.period_start_label))
+                        Spacer(modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = isPeriodStart,
+                            onCheckedChange = { isPeriodStart = it }
+                        )
+                        if (isPeriodStart) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color.Red)
+                            )
+                        }
+                    }
                 }
             }
 
-            // Отображение выбранного настроения красиво
+            // Display selected mood beautifully
             if (selectedMood != null) {
                 val moodIcons = mapOf(
                     MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
@@ -261,12 +446,12 @@ fun AddEntryScreen(
                     MoodLevel.EXCELLENT to Icons.Filled.Star
                 )
                 val moodLabels = mapOf(
-                    MoodLevel.VERY_BAD to "Очень плохо",
-                    MoodLevel.BAD to "Плохо",
-                    MoodLevel.NEUTRAL to "Нейтрально",
-                    MoodLevel.GOOD to "Хорошо",
-                    MoodLevel.VERY_GOOD to "Очень хорошо",
-                    MoodLevel.EXCELLENT to "Отлично"
+                    MoodLevel.VERY_BAD to stringResource(R.string.mood_very_bad),
+                    MoodLevel.BAD to stringResource(R.string.mood_bad),
+                    MoodLevel.NEUTRAL to stringResource(R.string.mood_neutral),
+                    MoodLevel.GOOD to stringResource(R.string.mood_good),
+                    MoodLevel.VERY_GOOD to stringResource(R.string.mood_very_good),
+                    MoodLevel.EXCELLENT to stringResource(R.string.mood_excellent)
                 )
                 Row(
                     modifier = Modifier
@@ -307,8 +492,8 @@ fun AddEntryScreen(
             }
 
             if (isPeriodStart) {
-                val periodLength = 5 // дней
-                val cycleLength = 28 // дней
+                val periodLength = 5 // days
+                val cycleLength = 28 // days
                 val periodStart = entryDate.toLocalDate()
                 val periodEnd = periodStart.plusDays((periodLength - 1).toLong())
                 val nextPeriodStart = periodStart.plusDays(cycleLength.toLong())
@@ -320,14 +505,14 @@ fun AddEntryScreen(
                         .background(Color(0xFFF8BBD0), RoundedCornerShape(8.dp))
                         .padding(12.dp)
                 ) {
-                    Text("Примерные дни менструации:", color = Color(0xFFD81B60))
+                    Text(stringResource(R.string.example_period), color = Color(0xFFD81B60))
                     Text(
                         "${periodStart.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))} — ${periodEnd.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}",
                         color = Color(0xFFD81B60),
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Следующий цикл ожидается:", color = Color(0xFF7B1FA2))
+                    Text(stringResource(R.string.next_cycle_expected), color = Color(0xFF7B1FA2))
                     Text(
                         "${nextPeriodStart.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))} — ${nextPeriodEnd.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}",
                         color = Color(0xFF7B1FA2),
@@ -338,21 +523,7 @@ fun AddEntryScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Выбор даты и времени
-            Text("Дата и время записи", style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    entryDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Button(onClick = { showDatePicker = true }) {
-                    Text("Изменить дату")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { showTimePicker = true }) {
-                    Text("Изменить время")
-                }
-            }
+            // Date and Time Picker Dialogs
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
@@ -369,12 +540,12 @@ fun AddEntryScreen(
                                 }
                             }
                         ) {
-                            Text("OK")
+                            Text(stringResource(R.string.ok))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDatePicker = false }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 ) {
@@ -388,15 +559,15 @@ fun AddEntryScreen(
                         TextButton(onClick = {
                             entryDate = entryDate.withHour(tempHour).withMinute(tempMinute)
                             showTimePicker = false
-                        }) { Text("ОК") }
+                        }) { Text(stringResource(R.string.ok)) }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showTimePicker = false }) { Text("Отмена") }
+                        TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel)) }
                     },
-                    title = { Text("Выберите время") },
+                    title = { Text(stringResource(R.string.select_time)) },
                     text = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Часы: ")
+                            Text(stringResource(R.string.hours))
                             Slider(
                                 value = tempHour.toFloat(),
                                 onValueChange = { tempHour = it.toInt() },
@@ -406,7 +577,7 @@ fun AddEntryScreen(
                             Text(tempHour.toString().padStart(2, '0'))
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Минуты: ")
+                            Text(stringResource(R.string.minutes))
                             Slider(
                                 value = tempMinute.toFloat(),
                                 onValueChange = { tempMinute = it.toInt() },
@@ -440,7 +611,7 @@ fun AddEntryScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = selectedMood != null && selectedPhase != null
             ) {
-                Text("Сохранить")
+                Text(stringResource(R.string.save))
             }
         }
     }

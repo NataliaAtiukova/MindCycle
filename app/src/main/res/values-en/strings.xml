@@ -1,0 +1,101 @@
+<resources>
+    <string name="app_name">MindCycle: Cycle Tracking</string>
+    
+    <!-- Navigation -->
+    <string name="calendar">Calendar</string>
+    <string name="add_entry">Add Entry</string>
+    <string name="entries_list">Entries List</string>
+    <string name="symptoms_label">Symptoms</string>
+    <string name="notes_label_detail">Notes</string>
+    
+    <!-- Calendar Screen -->
+    <string name="cycle_prediction">Cycle Prediction</string>
+    <string name="next_period">Next Period</string>
+    <string name="ovulation">Ovulation</string>
+    <string name="average_cycle_length">Average Cycle Length</string>
+    <string name="days">days</string>
+    <string name="statistics">Statistics</string>
+    <string name="total_entries">Total Entries</string>
+    <string name="average_mood">Average Mood</string>
+    
+    <!-- Mood Levels -->
+    <string name="mood_very_bad">Very Bad</string>
+    <string name="mood_bad">Bad</string>
+    <string name="mood_neutral">Neutral</string>
+    <string name="mood_good">Good</string>
+    <string name="mood_very_good">Very Good</string>
+    <string name="mood_excellent">Excellent</string>
+    <string name="mood_unknown">Unknown</string>
+    
+    <!-- Cycle Phases -->
+    <string name="phase_menstruation">Menstruation</string>
+    <string name="phase_follicular">Follicular</string>
+    <string name="phase_ovulation">Ovulation</string>
+    <string name="phase_luteal">Luteal</string>
+    <string name="phase_pms">PMS</string>
+    <string name="phase_none">None</string>
+    <string name="phase_unknown">Unknown</string>
+    
+    <!-- Add Entry Screen -->
+    <string name="save_entry">Save Entry</string>
+    <string name="delete_entry">Delete Entry</string>
+    <string name="date">Date</string>
+    <string name="mood">Mood</string>
+    <string name="cycle_phase">Cycle Phase</string>
+    <string name="phase">Cycle Phase</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="notes">Notes</string>
+    <string name="notes_label">Enter notes</string>
+    <string name="select_symptoms">Select Symptoms</string>
+    <string name="add_note">Add Note</string>
+    <string name="entry_saved">Entry Saved</string>
+    <string name="entry_deleted">Entry Deleted</string>
+    <string name="error_saving">Error Saving</string>
+    <string name="error_deleting">Error Deleting</string>
+    <string name="period_start">Period Start</string>
+    <string name="period_start_label">Mark as period start</string>
+    <string name="example_period">Estimated period days:</string>
+    <string name="next_cycle_expected">Next cycle expected:</string>
+    <string name="select_time">Select Time</string>
+    <string name="hours">Hours</string>
+    <string name="minutes">Minutes</string>
+    <string name="save">Save</string>
+    
+    <!-- Symptoms -->
+    <string name="symptom_fatigue">Fatigue</string>
+    <string name="symptom_pain">Pain</string>
+    <string name="symptom_irritation">Irritation</string>
+    <string name="symptom_anxiety">Anxiety</string>
+    <string name="symptom_headache">Headache</string>
+    <string name="symptom_cramps">Cramps</string>
+    <string name="symptom_bloating">Bloating</string>
+    <string name="symptom_insomnia">Insomnia</string>
+    
+    <!-- Common -->
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="back">Back</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="loading">Loading...</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="ad_failed_to_load">Ad failed to load</string>
+    <string name="failed_to_load_data">Failed to load data</string>
+    <string name="failed_to_add_entry">Failed to add entry</string>
+    <string name="failed_to_delete_entry">Failed to delete entry</string>
+    
+    <!-- Calendar Screen Additional -->
+    <string name="next_month">Next Month</string>
+    <string name="mon">Mon</string>
+    <string name="tue">Tue</string>
+    <string name="wed">Wed</string>
+    <string name="thu">Thu</string>
+    <string name="fri">Fri</string>
+    <string name="sat">Sat</string>
+    <string name="sun">Sun</string>
+    <string name="entry_details">Entry Details</string>
+    <string name="entry_for_date">Entry for %s</string>
+    <string name="close">Close</string>
+</resources>

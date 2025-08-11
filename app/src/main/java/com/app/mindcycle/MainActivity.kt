@@ -8,8 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.app.mindcycle.R
 import com.app.mindcycle.data.db.MoodDatabase
 import com.app.mindcycle.data.model.CyclePrediction
 import com.app.mindcycle.data.model.MoodEntry
@@ -42,6 +45,7 @@ class MainActivity : ComponentActivity() {
                 var isLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
                 val coroutineScope = rememberCoroutineScope()
+                val context = LocalContext.current
 
                 // Load initial data
                 LaunchedEffect(Unit) {
@@ -49,7 +53,7 @@ class MainActivity : ComponentActivity() {
                         isLoading = true
                         viewModel.loadInitialData()
                     } catch (e: Exception) {
-                        errorMessage = "Failed to load data: ${e.message}"
+                        errorMessage = "Error loading data: ${e.message}"
                     } finally {
                         isLoading = false
                     }
@@ -70,7 +74,7 @@ class MainActivity : ComponentActivity() {
                             try {
                                 viewModel.addEntry(entry)
                             } catch (e: Exception) {
-                                errorMessage = "Failed to add entry: ${e.message}"
+                                errorMessage = "Error saving: ${e.message}"
                             } finally {
                                 isLoading = false
                             }
@@ -83,7 +87,7 @@ class MainActivity : ComponentActivity() {
                             try {
                                 viewModel.deleteEntry(entry)
                             } catch (e: Exception) {
-                                errorMessage = "Failed to delete entry: ${e.message}"
+                                errorMessage = "Error deleting: ${e.message}"
                             } finally {
                                 isLoading = false
                             }

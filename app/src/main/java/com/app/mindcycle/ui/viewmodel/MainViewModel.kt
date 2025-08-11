@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.temporal.ChronoUnit
+import com.app.mindcycle.R
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = MoodDatabase.buildDatabase(application)
