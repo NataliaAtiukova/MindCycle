@@ -61,8 +61,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun MindCycleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Отключаем динамические цвета, чтобы использовать нашу тему
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

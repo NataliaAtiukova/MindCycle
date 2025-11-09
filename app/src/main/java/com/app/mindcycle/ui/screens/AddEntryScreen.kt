@@ -66,6 +66,8 @@ import java.time.Instant
 fun AddEntryScreen(
     entryToEdit: MoodEntry?,
     initialDate: LocalDateTime?,
+    defaultIsPeriodStart: Boolean = false,
+    quickSymptom: String? = null,
     onNavigateBack: () -> Unit,
     onSaveEntry: (MoodEntry) -> Unit,
     modifier: Modifier = Modifier
@@ -73,8 +75,8 @@ fun AddEntryScreen(
     var selectedMood by remember { mutableStateOf(entryToEdit?.moodLevel) }
     var selectedPhase by remember { mutableStateOf(entryToEdit?.cyclePhase) }
     var note by remember { mutableStateOf(entryToEdit?.note ?: "") }
-    var isPeriodStart by remember { mutableStateOf(entryToEdit?.isPeriodStart ?: false) }
-    var selectedSymptoms by remember { mutableStateOf(entryToEdit?.symptoms?.toSet() ?: emptySet()) }
+    var isPeriodStart by remember { mutableStateOf(entryToEdit?.isPeriodStart ?: defaultIsPeriodStart) }
+    var selectedSymptoms by remember { mutableStateOf(entryToEdit?.symptoms?.toSet() ?: quickSymptom?.let { setOf(it) } ?: emptySet()) }
     var entryDate by remember { mutableStateOf(entryToEdit?.date ?: initialDate ?: LocalDateTime.now()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }

@@ -17,6 +17,7 @@
     <string name="statistics">Statistics</string>
     <string name="total_entries">Total Entries</string>
     <string name="average_mood">Average Mood</string>
+    <string name="insufficient_data">Not enough data</string>
     
     <!-- Mood Levels -->
     <string name="mood_very_bad">Very Bad</string>
@@ -35,6 +36,21 @@
     <string name="phase_pms">PMS</string>
     <string name="phase_none">None</string>
     <string name="phase_unknown">Unknown</string>
+
+    <!-- Modes -->
+    <string name="mode_standard">Standard</string>
+    <string name="mode_standard_desc">Balanced forecast and daily guidance.</string>
+    <string name="mode_irregular">Irregular / PCOS</string>
+    <string name="mode_irregular_desc">Wider prediction window and softer nudges.</string>
+    <string name="mode_perimenopause">Perimenopause</string>
+    <string name="mode_perimenopause_desc">Focus on symptoms, forecast hidden by default.</string>
+    <string name="mode_hc">Hormonal contraception</string>
+    <string name="mode_hc_desc">Track pills/patch/ring with quiet reminders.</string>
+
+    <!-- Confidence -->
+    <string name="confidence_low">Low confidence</string>
+    <string name="confidence_medium">Medium confidence</string>
+    <string name="confidence_high">High confidence</string>
     
     <!-- Add Entry Screen -->
     <string name="save_entry">Save Entry</string>
@@ -70,6 +86,25 @@
     <string name="symptom_cramps">Cramps</string>
     <string name="symptom_bloating">Bloating</string>
     <string name="symptom_insomnia">Insomnia</string>
+
+    <!-- Contraception -->
+    <string name="method_pill">Pill</string>
+    <string name="method_patch">Patch</string>
+    <string name="method_ring">Ring</string>
+
+    <!-- Reminders -->
+    <string name="reminder_day_log">Log the day</string>
+    <string name="reminder_day_log_body">Update your mood and events.</string>
+    <string name="reminder_symptom_log">Wellbeing</string>
+    <string name="reminder_symptom_log_body">Capture symptoms and notes.</string>
+    <string name="reminder_hc">Take contraception</string>
+    <string name="reminder_hc_body">Log pill/patch/ring intake.</string>
+    <string name="reminder_channel_name">Quiet reminders</string>
+    <string name="reminder_channel_desc">Low priority cycle nudges</string>
+    <string name="action_snooze_15">Snooze 15 min</string>
+    <string name="action_snooze_30">Snooze 30 min</string>
+    <string name="action_snooze_60">Snooze 60 min</string>
+    <string name="action_skip_today">Skip today</string>
     
     <!-- Common -->
     <string name="cancel">Cancel</string>
@@ -98,4 +133,43 @@
     <string name="entry_details">Entry Details</string>
     <string name="entry_for_date">Entry for %s</string>
     <string name="close">Close</string>
+
+    <!-- New Screens -->
+    <string name="today_title">Today</string>
+    <string name="analytics_title">Insights</string>
+    <string name="settings_title">Settings</string>
+    <string name="forecast_window_label">Window</string>
+    <string name="forecast_confidence_label">Confidence</string>
+    <string name="forecast_window_range">%1$s — %2$s</string>
+    <string name="forecast_hidden_perimenopause">Forecast is hidden in perimenopause mode. Focus on notes instead.</string>
+    <string name="insufficient_data_hint">Log at least three period starts to unlock the forecast.</string>
+    <string name="mode_badge_template">Mode: %s</string>
+    <string name="cta_period_start">Started</string>
+    <string name="cta_period_end">Ended</string>
+    <string name="quick_symptoms_title">How you feel</string>
+    <string name="log_entry">Add entry</string>
+    <string name="open_calendar">Calendar</string>
+    <string name="view_entries">All entries</string>
+    <string name="hc_journal_title">HC intake log</string>
+    <string name="hc_mark_taken">Mark as taken</string>
+    <string name="hc_last_taken">Last intake: %s</string>
+    <string name="hc_no_log">No intake logged yet.</string>
+    <string name="reminders_preview_title">Quiet reminders</string>
+    <string name="reminder_time_label">At %1$02d:%2$02d</string>
+    <string name="reminder_disabled">Off</string>
+    <string name="reminder_muted_today">Muted today</string>
+    <string name="reminder_edit_time">Change time</string>
+    <string name="reminder_mute_today">Mute for today</string>
+
+    <!-- Analytics -->
+    <string name="analytics_cycle_length_title">Cycle length trend</string>
+    <string name="analytics_mood_title">Mood by phase</string>
+    <string name="analytics_symptom_frequency">Frequent symptoms</string>
+    <string name="analytics_empty">Not enough data for analytics.</string>
+
+    <!-- Settings -->
+    <string name="settings_modes_header">Cycle mode</string>
+    <string name="settings_reminders_header">Reminders</string>
+    <string name="settings_export_header">Export</string>
+    <string name="settings_export_button">Export data</string>
 </resources>

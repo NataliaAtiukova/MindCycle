@@ -18,11 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.mindcycle.R
 import com.app.mindcycle.data.model.CyclePhase
-import com.app.mindcycle.data.model.CyclePrediction
+import com.app.mindcycle.data.model.CycleForecast
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
 import com.app.mindcycle.ui.components.AdBanner
@@ -106,15 +107,17 @@ private val phaseLabels = mapOf(
 @Composable
 fun CalendarScreen(
     entries: List<MoodEntry>,
-    cyclePrediction: CyclePrediction?,
+    cycleForecast: CycleForecast?,
     onNavigateToAddEntry: (String) -> Unit,
     onNavigateToEditEntry: (Long) -> Unit,
     onNavigateToEntriesList: () -> Unit
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDayDetails by remember { mutableStateOf(false) }
     var selectedEntry by remember { mutableStateOf<MoodEntry?>(null) }
     val context = LocalContext.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
     val symptomIcons = mapOf(
         stringResource(R.string.symptom_fatigue) to Icons.Filled.BatteryAlert,
@@ -140,7 +143,7 @@ fun CalendarScreen(
         )
 
         // Предсказание цикла
-        cyclePrediction?.let { prediction ->
+        cycleForecast?.let { forecast ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,9 +157,16 @@ fun CalendarScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("${stringResource(R.string.next_period)}: ${prediction.nextPeriodStart.toLocalDate()}")
-                    Text("${stringResource(R.string.ovulation)}: ${prediction.nextOvulation.toLocalDate()}")
-                    Text("${stringResource(R.string.average_cycle_length)}: ${prediction.averageCycleLength} ${stringResource(R.string.days)}")
+                    forecast.predictedStartDate?.let { date ->
+                        Text("${stringResource(R.string.next_period)}: $date")
+                    }
+                    val windowStart = forecast.windowStart
+                    val windowEnd = forecast.windowEnd
+                    if (windowStart != null && windowEnd != null) {
+                        Text("${stringResource(R.string.example_period)} ${windowStart} - ${windowEnd}")
+                    }
+                    Text("${stringResource(R.string.average_cycle_length)}: ${forecast.medianCycleLengthDays.toInt()} ${stringResource(R.string.days)}")
+                    Text(text = stringResource(forecast.confidenceLevel.labelRes))
                 }
             }
         }
@@ -212,7 +222,6 @@ fun CalendarScreen(
                 modifier = Modifier.padding(16.dp)
             ) {
                 // Здесь будет реализация календаря
-                val currentMonth = YearMonth.from(selectedDate)
                 val firstDayOfMonth = currentMonth.atDay(1)
                 val lastDayOfMonth = currentMonth.atEndOfMonth()
                 val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
@@ -229,12 +238,19 @@ fun CalendarScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        IconButton(onClick = {
+                            currentMonth = currentMonth.minusMonths(1)
+                        }) {
+                            Icon(Icons.Default.ChevronLeft, contentDescription = null)
+                        }
                         Text(
                             text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
                             style = MaterialTheme.typography.titleLarge
                         )
-                        IconButton(onClick = { /* TODO: Добавить навигацию по месяцам */ }) {
-                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.next_month))
+                        IconButton(onClick = {
+                            currentMonth = currentMonth.plusMonths(1)
+                        }) {
+                            Icon(Icons.Default.ChevronRight, contentDescription = null)
                         }
                     }
 
@@ -278,12 +294,17 @@ fun CalendarScreen(
                             val isSelected = date == selectedDate
                             val isToday = date == LocalDate.now()
                             val entry = entries.find { it.date.toLocalDate() == date }
-                            val isPredictedPeriod = cyclePrediction?.let { prediction ->
-                                date.isAfter(prediction.nextPeriodStart.toLocalDate().minusDays(1)) &&
-                                date.isBefore(prediction.nextPeriodEnd.toLocalDate().plusDays(1))
+                            val isPredictedPeriod = cycleForecast?.let { forecast ->
+                                val start = forecast.windowStart
+                                val end = forecast.windowEnd
+                                if (start != null && end != null) {
+                                    (date.isAfter(start.minusDays(1)) && date.isBefore(end.plusDays(1))) || date == start || date == end
+                                } else {
+                                    false
+                                }
                             } ?: false
-                            val isPredictedOvulation = cyclePrediction?.let { prediction ->
-                                date == prediction.nextOvulation.toLocalDate()
+                            val isPredictedOvulation = cycleForecast?.predictedStartDate?.let { predicted ->
+                                date == predicted.minusDays(14)
                             } ?: false
 
                             Box(
@@ -339,147 +360,82 @@ fun CalendarScreen(
     }
 
     if (showDayDetails && selectedEntry != null) {
-        AlertDialog(
+        ModalBottomSheet(
             onDismissRequest = { showDayDetails = false },
-                            title = { Text(stringResource(R.string.entry_details)) },
-            text = {
-                Column {
-                    Text(stringResource(R.string.date) + ": ${selectedEntry!!.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}")
-                    Text(stringResource(R.string.mood) + ": ${getLocalizedMoodLabel(selectedEntry!!.moodLevel)}")
-                    Text(stringResource(R.string.phase) + ": ${getLocalizedPhaseLabel(selectedEntry!!.cyclePhase)}")
-                    if (selectedEntry!!.symptoms.isNotEmpty()) {
-                        Text(stringResource(R.string.symptoms) + ": ${selectedEntry!!.symptoms.joinToString(", ")}")
-                    }
-                    if (!selectedEntry!!.note.isNullOrEmpty()) {
-                        Text(stringResource(R.string.notes) + ": ${selectedEntry!!.note}")
-                    }
-                    if (selectedEntry!!.isPeriodStart) {
-                        Text(stringResource(R.string.period_start))
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
+            sheetState = sheetState
+        ) {
+            DayDetailsContent(
+                entry = selectedEntry!!,
+                onEdit = {
                     onNavigateToEditEntry(selectedEntry!!.id)
                     showDayDetails = false
-                }) {
-                    Text(stringResource(R.string.edit))
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDayDetails = false }) {
-                    Text(stringResource(R.string.close))
-                }
-            }
-        )
+                },
+                onClose = { showDayDetails = false }
+            )
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DayDetailsDialog(
+private fun DayDetailsContent(
     entry: MoodEntry,
-    onDismissRequest: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onClose: () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-                        title = { Text(stringResource(R.string.entry_for_date, entry.date.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))) },
-        text = {
-            Column {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = moodIcons[entry.moodLevel] ?: Icons.Filled.Psychology,
-                                contentDescription = getLocalizedMoodLabel(entry.moodLevel),
-                                tint = when (entry.moodLevel) {
-                                    MoodLevel.VERY_BAD -> Color(0xFFD32F2F)
-                                    MoodLevel.BAD -> Color(0xFFF57C00)
-                                    MoodLevel.NEUTRAL -> Color(0xFF757575)
-                                    MoodLevel.GOOD -> Color(0xFF388E3C)
-                                    MoodLevel.VERY_GOOD -> Color(0xFF1976D2)
-                                    MoodLevel.EXCELLENT -> Color(0xFFD81B60)
-                                    else -> Color.Unspecified
-                                },
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = getLocalizedMoodLabel(entry.moodLevel),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = phaseIcons[entry.cyclePhase] ?: Icons.Filled.RemoveCircle,
-                                contentDescription = getLocalizedPhaseLabel(entry.cyclePhase),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = getLocalizedPhaseLabel(entry.cyclePhase),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                        if (entry.symptoms.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                entry.symptoms.forEach { symptom ->
-                                    AssistChip(
-                                        onClick = {},
-                                        label = { Text(symptom) },
-                                        leadingIcon = { 
-                                            Icon(
-                                                getSymptomIcon(symptom), 
-                                                contentDescription = symptom
-                                            ) 
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        if (!entry.note.isNullOrBlank()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = stringResource(R.string.notes) + ":", style = MaterialTheme.typography.titleMedium)
-                            Text(text = entry.note, style = MaterialTheme.typography.bodyMedium)
-                        }
-                        if (entry.isPeriodStart) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(Color.Red)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.period_start), color = Color.Red, style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(24.dp)) {
+        Text(
+            text = stringResource(R.string.entry_for_date, entry.date.toLocalDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = moodIcons[entry.moodLevel] ?: Icons.Filled.Psychology,
+                contentDescription = getLocalizedMoodLabel(entry.moodLevel),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = getLocalizedMoodLabel(entry.moodLevel), style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = phaseIcons[entry.cyclePhase] ?: Icons.Filled.RemoveCircle,
+                contentDescription = getLocalizedPhaseLabel(entry.cyclePhase),
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = getLocalizedPhaseLabel(entry.cyclePhase), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (entry.symptoms.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entry.symptoms.forEach { symptom ->
+                    AssistChip(onClick = { }, label = { Text(symptom) })
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.close))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onEdit) {
+        }
+        if (!entry.note.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(text = entry.note ?: "", style = MaterialTheme.typography.bodyMedium)
+        }
+        if (entry.isPeriodStart) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = stringResource(R.string.period_start), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onEdit, modifier = Modifier.weight(1f)) {
                 Text(stringResource(R.string.edit))
             }
+            OutlinedButton(onClick = onClose, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.close))
+            }
         }
-    )
-} 
+    }
+}

@@ -3,15 +3,16 @@ package com.app.mindcycle.data.db
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.app.mindcycle.data.model.ContraceptionMethod
 import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodLevel
-import java.time.LocalDate
-import java.time.ZoneOffset
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
 class Converters {
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     private val gson = Gson()
 
     @TypeConverter
@@ -22,6 +23,16 @@ class Converters {
     @TypeConverter
     fun dateToTimestamp(date: LocalDateTime?): String? {
         return date?.format(formatter)
+    }
+
+    @TypeConverter
+    fun fromLocalDate(value: String?): LocalDate? {
+        return value?.let { LocalDate.parse(it, dateFormatter) }
+    }
+
+    @TypeConverter
+    fun localDateToString(date: LocalDate?): String? {
+        return date?.format(dateFormatter)
     }
 
     @TypeConverter
@@ -55,4 +66,14 @@ class Converters {
     fun toCyclePhase(value: String): CyclePhase {
         return CyclePhase.fromString(value)
     }
-} 
+
+    @TypeConverter
+    fun fromContraceptionMethod(method: ContraceptionMethod?): String? {
+        return method?.name
+    }
+
+    @TypeConverter
+    fun toContraceptionMethod(value: String?): ContraceptionMethod? {
+        return value?.let { ContraceptionMethod.valueOf(it) }
+    }
+}

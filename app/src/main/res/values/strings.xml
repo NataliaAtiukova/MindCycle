@@ -17,6 +17,7 @@
     <string name="statistics">Статистика</string>
     <string name="total_entries">Всего записей</string>
     <string name="average_mood">Среднее настроение</string>
+    <string name="insufficient_data">Недостаточно данных</string>
     
     <!-- Mood Levels -->
     <string name="mood_very_bad">Очень плохо</string>
@@ -35,6 +36,21 @@
     <string name="phase_pms">ПМС</string>
     <string name="phase_none">Нет</string>
     <string name="phase_unknown">Неизвестно</string>
+
+    <!-- Modes -->
+    <string name="mode_standard">Стандартный</string>
+    <string name="mode_standard_desc">Баланс прогноза и ежедневных подсказок.</string>
+    <string name="mode_irregular">Нерегулярный / ПКЯ</string>
+    <string name="mode_irregular_desc">Расширенное окно прогноза и мягкие напоминания.</string>
+    <string name="mode_perimenopause">Перименопауза</string>
+    <string name="mode_perimenopause_desc">Больше внимания самочувствию, прогноз скрыт по умолчанию.</string>
+    <string name="mode_hc">Гормональная контрацепция</string>
+    <string name="mode_hc_desc">Журнал приёма и напоминания о таблетках/пластырях/кольце.</string>
+
+    <!-- Confidence -->
+    <string name="confidence_low">Низкая уверенность</string>
+    <string name="confidence_medium">Средняя уверенность</string>
+    <string name="confidence_high">Высокая уверенность</string>
     
     <!-- Add Entry Screen -->
     <string name="save_entry">Сохранить запись</string>
@@ -70,6 +86,25 @@
     <string name="symptom_cramps">Спазмы</string>
     <string name="symptom_bloating">Вздутие</string>
     <string name="symptom_insomnia">Бессонница</string>
+
+    <!-- Contraception -->
+    <string name="method_pill">Таблетка</string>
+    <string name="method_patch">Пластырь</string>
+    <string name="method_ring">Кольцо</string>
+
+    <!-- Reminders -->
+    <string name="reminder_day_log">Отметить день</string>
+    <string name="reminder_day_log_body">Заполните настроение и события дня.</string>
+    <string name="reminder_symptom_log">Самочувствие</string>
+    <string name="reminder_symptom_log_body">Запишите симптомы и заметки.</string>
+    <string name="reminder_hc">Принять ГК</string>
+    <string name="reminder_hc_body">Отметьте приём таблеток/пластыря/кольца.</string>
+    <string name="reminder_channel_name">Тихие напоминания</string>
+    <string name="reminder_channel_desc">Мягкие напоминания о дне, симптомах и ГК</string>
+    <string name="action_snooze_15">Отложить на 15 мин</string>
+    <string name="action_snooze_30">Отложить на 30 мин</string>
+    <string name="action_snooze_60">Отложить на 60 мин</string>
+    <string name="action_skip_today">Отключить на сегодня</string>
     
     <!-- Common -->
     <string name="cancel">Отмена</string>
@@ -98,4 +133,43 @@
     <string name="entry_details">Детали записи</string>
     <string name="entry_for_date">Запись за %s</string>
     <string name="close">Закрыть</string>
+
+    <!-- New Screens -->
+    <string name="today_title">Сегодня</string>
+    <string name="analytics_title">Аналитика</string>
+    <string name="settings_title">Настройки</string>
+    <string name="forecast_window_label">Окно</string>
+    <string name="forecast_confidence_label">Уверенность</string>
+    <string name="forecast_window_range">%1$s — %2$s</string>
+    <string name="forecast_hidden_perimenopause">В режиме перименопаузы прогноз скрыт. Сфокусируйтесь на заметках и симптомах.</string>
+    <string name="insufficient_data_hint">Добавьте минимум три отмеченных старта, чтобы увидеть прогноз.</string>
+    <string name="mode_badge_template">Режим: %s</string>
+    <string name="cta_period_start">Начался</string>
+    <string name="cta_period_end">Закончился</string>
+    <string name="quick_symptoms_title">Самочувствие</string>
+    <string name="log_entry">Добавить запись</string>
+    <string name="open_calendar">Календарь</string>
+    <string name="view_entries">Все записи</string>
+    <string name="hc_journal_title">ГК: журнал приёма</string>
+    <string name="hc_mark_taken">Отметить приём</string>
+    <string name="hc_last_taken">Последний приём: %s</string>
+    <string name="hc_no_log">Вы ещё не отмечали приём.</string>
+    <string name="reminders_preview_title">Тихие напоминания</string>
+    <string name="reminder_time_label">В %1$02d:%2$02d</string>
+    <string name="reminder_disabled">Выкл.</string>
+    <string name="reminder_muted_today">На сегодня выключено</string>
+    <string name="reminder_edit_time">Изменить время</string>
+    <string name="reminder_mute_today">Отключить на день</string>
+
+    <!-- Analytics -->
+    <string name="analytics_cycle_length_title">Длина цикла</string>
+    <string name="analytics_mood_title">Настроение по фазам</string>
+    <string name="analytics_symptom_frequency">Частые симптомы</string>
+    <string name="analytics_empty">Недостаточно данных для аналитики.</string>
+
+    <!-- Settings -->
+    <string name="settings_modes_header">Режим цикла</string>
+    <string name="settings_reminders_header">Напоминания</string>
+    <string name="settings_export_header">Экспорт</string>
+    <string name="settings_export_button">Экспортировать данные</string>
 </resources>

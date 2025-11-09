@@ -4,30 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.mindcycle.R
-import com.app.mindcycle.data.db.MoodDatabase
-import com.app.mindcycle.data.model.CyclePrediction
-import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.ui.navigation.AppNavigation
 import com.app.mindcycle.ui.theme.MindCycleTheme
 import com.app.mindcycle.ui.viewmodel.MainViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.temporal.ChronoUnit
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModelProvider
 import com.app.mindcycle.ads.YandexAdsManager
+import com.app.mindcycle.reminders.ReminderNotifications
+import org.threeten.bp.LocalDate
 
 class MainActivity : ComponentActivity() {
 
@@ -42,33 +32,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             MindCycleTheme {
                 val viewModel: MainViewModel = viewModel()
-                var isLoading by remember { mutableStateOf(false) }
+                var localLoading by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf<String?>(null) }
                 val coroutineScope = rememberCoroutineScope()
-                val context = LocalContext.current
+                val uiState by viewModel.uiState.collectAsState()
+                val deepLinkRoute = remember { intent?.getStringExtra(ReminderNotifications.EXTRA_DEEP_LINK) }
 
                 // Load initial data
                 LaunchedEffect(Unit) {
                     try {
-                        isLoading = true
+                        localLoading = true
                         viewModel.loadInitialData()
                     } catch (e: Exception) {
                         errorMessage = "Error loading data: ${e.message}"
                     } finally {
-                        isLoading = false
+                        localLoading = false
                     }
                 }
 
-                val entries by viewModel.entries.collectAsState()
-                val cyclePrediction by viewModel.cyclePrediction.collectAsState()
-
                 AppNavigation(
-                    entries = entries,
-                    cyclePrediction = cyclePrediction,
-                    isLoading = isLoading,
-                    errorMessage = errorMessage,
+                    uiState = uiState,
+                    isLoading = uiState.isLoading || localLoading,
+                    errorMessage = errorMessage ?: uiState.errorMessage,
                     onAddEntry = { entry ->
-                        isLoading = true
+                        localLoading = true
                         errorMessage = null
                         coroutineScope.launch {
                             try {
@@ -76,12 +63,12 @@ class MainActivity : ComponentActivity() {
                             } catch (e: Exception) {
                                 errorMessage = "Error saving: ${e.message}"
                             } finally {
-                                isLoading = false
+                                localLoading = false
                             }
                         }
                     },
                     onDeleteEntry = { entry ->
-                        isLoading = true
+                        localLoading = true
                         errorMessage = null
                         coroutineScope.launch {
                             try {
@@ -89,12 +76,25 @@ class MainActivity : ComponentActivity() {
                             } catch (e: Exception) {
                                 errorMessage = "Error deleting: ${e.message}"
                             } finally {
-                                isLoading = false
+                                localLoading = false
                             }
                         }
                     },
+                    onModeChange = { mode ->
+                        viewModel.setMode(mode)
+                    },
+                    onReminderToggle = { type, enabled ->
+                        viewModel.updateReminderEnabled(type, enabled)
+                    },
+                    onReminderTimeChange = { type, hour, minute ->
+                        viewModel.updateReminderTime(type, hour, minute)
+                    },
+                    onMuteReminderToday = { type -> viewModel.muteReminderForToday(type) },
+                    onRecordContraception = { method -> viewModel.recordContraception(method, LocalDate.now()) },
+                    initialDeepLink = deepLinkRoute,
                     onDismissError = {
                         errorMessage = null
+                        viewModel.clearError()
                     },
                     yandexAdsManager = yandexAdsManager,
                     activity = this
