@@ -160,6 +160,9 @@
     <string name="reminder_muted_today">На сегодня выключено</string>
     <string name="reminder_edit_time">Изменить время</string>
     <string name="reminder_mute_today">Отключить на день</string>
+    <string name="reminder_permission_title">Нужно разрешение</string>
+    <string name="reminder_permission_body">Разрешите уведомления, чтобы получать тихие напоминания в нужное время.</string>
+    <string name="request_permission">Разрешить</string>
 
     <!-- Analytics -->
     <string name="analytics_cycle_length_title">Длина цикла</string>
@@ -172,4 +175,25 @@
     <string name="settings_reminders_header">Напоминания</string>
     <string name="settings_export_header">Экспорт</string>
     <string name="settings_export_button">Экспортировать данные</string>
+    <string name="reminders_screen_subtitle">Настройте уведомления о дне, самочувствии и приёме ГК.</string>
+    <string name="data_privacy_intro">Экспортируйте историю, чтобы отправить врачу или сохранить резервную копию. Импорт поддерживает JSON, выгруженный из MindCycle.</string>
+    <string name="data_privacy_preview">Быстрый доступ к экспорту/импорту и настройкам приватности.</string>
+    <string name="data_import_btn">Импортировать</string>
+    <string name="data_import_hint">Вставьте JSON для импорта</string>
+    <string name="data_paste_last">Вставить экспорт</string>
+    <string name="data_recent_export">Последний экспорт</string>
+    <string name="data_export_success">Экспорт скопирован в буфер обмена</string>
+    <string name="data_import_success">Импорт завершён</string>
+    <string name="data_import_failed">Не удалось импортировать данные</string>
+    <string name="privacy_statement">Мы храним информацию только локально. Напоминания запускаются офлайн и не передают личные данные.</string>
+
+    <!-- Symptom journal -->
+    <string name="symptom_journal_title">Журнал симптомов</string>
+    <string name="symptom_journal_subtitle">Быстрый поиск по симптомам и заметкам.</string>
+    <string name="symptom_journal_empty">Пока нет заметок о симптомах за выбранный фильтр.</string>
+    <string name="symptom_journal_add">Добавить запись</string>
+    <string name="symptom_filter_all">Все</string>
+
+    <!-- Accessibility -->
+    <string name="cycle_progress_announce">Прогресс цикла %1$d%%</string>
 </resources>

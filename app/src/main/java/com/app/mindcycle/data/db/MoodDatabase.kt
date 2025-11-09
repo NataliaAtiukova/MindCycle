@@ -33,6 +33,12 @@ interface MoodEntryDao {
     @Query("SELECT * FROM mood_entries ORDER BY date DESC LIMIT 1")
     suspend fun getLastEntry(): MoodEntry?
 
+    @Query("SELECT * FROM mood_entries ORDER BY date DESC")
+    suspend fun getAllEntries(): List<MoodEntry>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: List<MoodEntry>)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertContraceptionEntry(entry: ContraceptionLogEntry)
 

@@ -1,37 +1,33 @@
 package com.app.mindcycle.ui.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.mindcycle.MindCycleApplication
-import com.app.mindcycle.data.db.MoodDatabase
-import com.app.mindcycle.data.forecast.CycleForecastCalculator
 import com.app.mindcycle.data.model.ContraceptionMethod
 import com.app.mindcycle.data.model.CycleMode
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.ReminderType
 import com.app.mindcycle.data.repository.CycleRepository
 import com.app.mindcycle.reminders.ReminderScheduler
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
+import javax.inject.Inject
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val database = MoodDatabase.buildDatabase(application)
-    private val app = application as MindCycleApplication
-    private val repository = CycleRepository(
-        dao = database.moodEntryDao(),
-        preferences = app.userPreferencesManager,
-        calculator = CycleForecastCalculator()
-    )
-    private val reminderScheduler: ReminderScheduler = app.reminderScheduler
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repository: CycleRepository,
+    private val reminderScheduler: ReminderScheduler
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+    private val gson = Gson()
 
     init {
         observeMode()
@@ -161,8 +157,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        database.close()
+    fun exportEntries(onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val data = repository.getAllEntries()
+            onResult(gson.toJson(data))
+        }
+    }
+
+    fun importEntries(payload: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            runCatching {
+                val listType = object : TypeToken<List<MoodEntry>>() {}.type
+                val entries: List<MoodEntry> = gson.fromJson(payload, listType)
+                repository.importEntries(entries)
+                refreshEntries()
+            }.onSuccess {
+                onComplete(true)
+            }.onFailure { error ->
+                _uiState.update { it.copy(errorMessage = error.message) }
+                onComplete(false)
+            }
+        }
     }
 }

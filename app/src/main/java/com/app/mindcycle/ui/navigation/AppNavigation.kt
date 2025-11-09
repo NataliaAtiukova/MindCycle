@@ -39,20 +39,27 @@ import com.app.mindcycle.ui.viewmodel.MainUiState
 import com.app.mindcycle.ui.screens.AddEntryScreen
 import com.app.mindcycle.ui.screens.CalendarScreen
 import com.app.mindcycle.ui.screens.AnalyticsScreen
+import com.app.mindcycle.ui.screens.DataPrivacyScreen
 import com.app.mindcycle.ui.screens.EntriesListScreen
+import com.app.mindcycle.ui.screens.RemindersScreen
 import com.app.mindcycle.ui.screens.SettingsScreen
+import com.app.mindcycle.ui.screens.SymptomJournalScreen
 import com.app.mindcycle.ui.screens.TodayScreen
 import androidx.compose.material3.SnackbarDuration
 import com.app.mindcycle.ads.YandexAdsManager
 import android.app.Activity
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.threeten.bp.LocalDate
 
 object AppDestinations {
     const val TODAY_ROUTE = "today"
     const val CALENDAR_ROUTE = "calendar"
     const val ANALYTICS_ROUTE = "analytics"
     const val SETTINGS_ROUTE = "settings"
+    const val SYMPTOMS_ROUTE = "symptoms"
+    const val REMINDERS_ROUTE = "reminders"
+    const val DATA_ROUTE = "data_privacy"
     const val ADD_ENTRY_ROUTE = "add_entry"
     const val ENTRIES_LIST_ROUTE = "entries_list"
     const val ENTRY_ID_ARG = "entryId"
@@ -82,6 +89,8 @@ fun AppNavigation(
     onReminderTimeChange: (ReminderType, Int, Int) -> Unit,
     onMuteReminderToday: (ReminderType) -> Unit,
     onRecordContraception: (ContraceptionMethod) -> Unit,
+    onExportData: ((String) -> Unit) -> Unit,
+    onImportData: (String, (Boolean) -> Unit) -> Unit,
     initialDeepLink: String?,
     onDismissError: () -> Unit,
     yandexAdsManager: YandexAdsManager,
@@ -134,29 +143,35 @@ fun AppNavigation(
         ) {
             NavHost(navController = navController, startDestination = AppDestinations.TODAY_ROUTE) {
                 composable(AppDestinations.TODAY_ROUTE) {
-                    TodayScreen(
-                        uiState = uiState,
-                        onNavigateToAddEntry = { date, isPeriodStart, symptom ->
-                            val encodedSymptom = symptom?.let { Uri.encode(it) } ?: ""
-                            navController.navigate(
-                                "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=$date&${AppDestinations.PERIOD_START_ARG}=$isPeriodStart&${AppDestinations.SYMPTOM_ARG}=$encodedSymptom"
-                            )
-                        },
-                        onNavigateToCalendar = {
-                            navController.navigate(AppDestinations.CALENDAR_ROUTE)
-                        },
-                        onNavigateToEntries = {
-                            yandexAdsManager.loadAndShowInterstitial(activity, activity)
-                            navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
-                        },
-                        onRecordContraception = { method ->
-                            onRecordContraception(method)
-                        }
-                    )
-                }
+                TodayScreen(
+                    uiState = uiState,
+                    onNavigateToAddEntry = { date, isPeriodStart, symptom ->
+                        val encodedSymptom = symptom?.let { Uri.encode(it) } ?: ""
+                        navController.navigate(
+                            "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=$date&${AppDestinations.PERIOD_START_ARG}=$isPeriodStart&${AppDestinations.SYMPTOM_ARG}=$encodedSymptom"
+                        )
+                    },
+                    onNavigateToCalendar = {
+                        navController.navigate(AppDestinations.CALENDAR_ROUTE)
+                    },
+                    onNavigateToEntries = {
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
+                        navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
+                    },
+                    onRecordContraception = { method ->
+                        onRecordContraception(method)
+                    },
+                    onOpenSymptomJournal = {
+                        navController.navigate(AppDestinations.SYMPTOMS_ROUTE)
+                    },
+                    onOpenReminders = {
+                        navController.navigate(AppDestinations.REMINDERS_ROUTE)
+                    }
+                )
+            }
 
-                composable(AppDestinations.CALENDAR_ROUTE) {
-                    CalendarScreen(
+            composable(AppDestinations.CALENDAR_ROUTE) {
+                CalendarScreen(
                         entries = uiState.entries,
                         cycleForecast = uiState.forecast,
                         onNavigateToAddEntry = { date ->
@@ -183,15 +198,21 @@ fun AppNavigation(
 
                 composable(AppDestinations.SETTINGS_ROUTE) {
                     SettingsScreen(
-                        uiState = uiState,
-                        onSelectMode = onModeChange,
-                        onToggleReminder = onReminderToggle,
-                        onReminderTimeChange = onReminderTimeChange,
-                        onMuteReminderToday = onMuteReminderToday
-                    )
-                }
+                    uiState = uiState,
+                    onSelectMode = onModeChange,
+                    onNavigateToReminders = {
+                        navController.navigate(AppDestinations.REMINDERS_ROUTE)
+                    },
+                    onNavigateToDataPrivacy = {
+                        navController.navigate(AppDestinations.DATA_ROUTE)
+                    },
+                    onNavigateToSymptomJournal = {
+                        navController.navigate(AppDestinations.SYMPTOMS_ROUTE)
+                    }
+                )
+            }
 
-                composable(
+            composable(
                     route = "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}={${AppDestinations.ENTRY_ID_ARG}}&${AppDestinations.DATE_ARG}={${AppDestinations.DATE_ARG}}&${AppDestinations.PERIOD_START_ARG}={${AppDestinations.PERIOD_START_ARG}}&${AppDestinations.SYMPTOM_ARG}={${AppDestinations.SYMPTOM_ARG}}",
                     arguments = listOf(
                         navArgument(AppDestinations.ENTRY_ID_ARG) {
@@ -247,19 +268,49 @@ fun AppNavigation(
                     )
                 }
 
-                composable(AppDestinations.ENTRIES_LIST_ROUTE) {
-                    EntriesListScreen(
-                        entries = uiState.entries,
-                        onDeleteEntry = onDeleteEntry,
-                        onNavigateToEditEntry = { entryId ->
-                            navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
-                        },
-                        onNavigateBack = {
-                            navController.navigateUp()
-                        }
-                    )
-                }
+            composable(AppDestinations.ENTRIES_LIST_ROUTE) {
+                EntriesListScreen(
+                    entries = uiState.entries,
+                    onDeleteEntry = onDeleteEntry,
+                    onNavigateToEditEntry = { entryId ->
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
+                    },
+                    onNavigateBack = {
+                        navController.navigateUp()
+                    }
+                )
             }
+
+            composable(AppDestinations.SYMPTOMS_ROUTE) {
+                SymptomJournalScreen(
+                    entries = uiState.entries,
+                    isLoading = uiState.isLoading,
+                    onNavigateBack = { navController.navigateUp() },
+                    onQuickAdd = { symptom ->
+                        val encoded = Uri.encode(symptom)
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=${org.threeten.bp.LocalDate.now()}&${AppDestinations.PERIOD_START_ARG}=false&${AppDestinations.SYMPTOM_ARG}=$encoded")
+                    }
+                )
+            }
+
+            composable(AppDestinations.REMINDERS_ROUTE) {
+                RemindersScreen(
+                    reminderConfigs = uiState.reminderConfigs,
+                    onToggleReminder = onReminderToggle,
+                    onTimeChange = onReminderTimeChange,
+                    onMuteReminderToday = onMuteReminderToday,
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
+
+            composable(AppDestinations.DATA_ROUTE) {
+                DataPrivacyScreen(
+                    onExportData = onExportData,
+                    onImportData = onImportData,
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
+        }
 
             if (isLoading) {
                 CircularProgressIndicator(

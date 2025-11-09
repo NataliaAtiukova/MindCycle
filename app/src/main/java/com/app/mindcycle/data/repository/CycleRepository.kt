@@ -38,6 +38,14 @@ class CycleRepository(
         dao.deleteEntry(entry)
     }
 
+    suspend fun getAllEntries(): List<MoodEntry> = dao.getAllEntries()
+
+    suspend fun importEntries(entries: List<MoodEntry>) {
+        if (entries.isNotEmpty()) {
+            dao.insertEntries(entries)
+        }
+    }
+
     suspend fun buildForecast(mode: CycleMode): CycleForecast {
         val starts = dao.getPeriodStarts()
         return calculator.forecast(starts, mode)
