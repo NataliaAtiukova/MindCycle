@@ -65,6 +65,7 @@
     <string name="select_symptoms">Выберите симптомы</string>
     <string name="add_note">Добавить заметку</string>
     <string name="entry_saved">Запись сохранена</string>
+    <string name="no_entries_placeholder">Запись не найдена</string>
     <string name="entry_deleted">Запись удалена</string>
     <string name="error_saving">Ошибка при сохранении</string>
     <string name="error_deleting">Ошибка при удалении</string>

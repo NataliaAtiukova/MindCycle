@@ -65,6 +65,7 @@
     <string name="select_symptoms">Select Symptoms</string>
     <string name="add_note">Add Note</string>
     <string name="entry_saved">Entry Saved</string>
+    <string name="no_entries_placeholder">No entry logged yet</string>
     <string name="entry_deleted">Entry Deleted</string>
     <string name="error_saving">Error Saving</string>
     <string name="error_deleting">Error Deleting</string>

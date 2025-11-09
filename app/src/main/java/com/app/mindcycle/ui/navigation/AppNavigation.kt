@@ -4,10 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Analytics
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Today
+import androidx.compose.material.icons.rounded.Analytics
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -71,10 +71,10 @@ object AppDestinations {
 private data class BottomDestination(val route: String, val icon: ImageVector, @StringRes val labelRes: Int)
 
 private val bottomDestinations = listOf(
-    BottomDestination(AppDestinations.TODAY_ROUTE, Icons.Outlined.Today, R.string.today_title),
-    BottomDestination(AppDestinations.CALENDAR_ROUTE, Icons.Outlined.CalendarMonth, R.string.calendar),
-    BottomDestination(AppDestinations.ANALYTICS_ROUTE, Icons.Outlined.Analytics, R.string.analytics_title),
-    BottomDestination(AppDestinations.SETTINGS_ROUTE, Icons.Outlined.Settings, R.string.settings_title)
+    BottomDestination(AppDestinations.TODAY_ROUTE, Icons.Rounded.Today, R.string.today_title),
+    BottomDestination(AppDestinations.CALENDAR_ROUTE, Icons.Rounded.CalendarMonth, R.string.calendar),
+    BottomDestination(AppDestinations.ANALYTICS_ROUTE, Icons.Rounded.Analytics, R.string.analytics_title),
+    BottomDestination(AppDestinations.SETTINGS_ROUTE, Icons.Rounded.Settings, R.string.settings_title)
 )
 
 @Composable
@@ -172,20 +172,23 @@ fun AppNavigation(
 
             composable(AppDestinations.CALENDAR_ROUTE) {
                 CalendarScreen(
-                        entries = uiState.entries,
-                        cycleForecast = uiState.forecast,
-                        onNavigateToAddEntry = { date ->
-                            navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=$date")
-                        },
-                        onNavigateToEditEntry = { entryId ->
-                            navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
-                        },
-                        onNavigateToEntriesList = {
-                            yandexAdsManager.loadAndShowInterstitial(activity, activity)
-                            navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
-                        }
-                    )
-                }
+                    entries = uiState.entries,
+                    cycleForecast = uiState.forecast,
+                    onNavigateToAddEntry = { date, isPeriodStart ->
+                        navController.navigate(
+                            "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
+                                "${AppDestinations.DATE_ARG}=$date&${AppDestinations.PERIOD_START_ARG}=$isPeriodStart"
+                        )
+                    },
+                    onNavigateToEditEntry = { entryId ->
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
+                    },
+                    onNavigateToEntriesList = {
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
+                        navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
+                    }
+                )
+            }
 
                 composable(AppDestinations.ANALYTICS_ROUTE) {
                     AnalyticsScreen(

@@ -1,8 +1,17 @@
 package com.app.mindcycle.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,25 +23,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +61,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,226 +79,461 @@ import com.app.mindcycle.data.model.MoodLevel
 import com.app.mindcycle.ui.components.AdBanner
 import com.app.mindcycle.ui.theme.ForecastPink
 import com.app.mindcycle.ui.theme.MenstruationPink
-import com.kizitonwose.calendar.compose.HorizontalCalendar
-import com.kizitonwose.calendar.compose.rememberCalendarState
-import com.kizitonwose.calendar.core.CalendarDay
-import com.kizitonwose.calendar.core.DayPosition
-import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
 import java.util.Locale
-import org.threeten.bp.format.DateTimeFormatter as ThreeTenFormatter
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun CalendarScreen(
     entries: List<MoodEntry>,
     cycleForecast: CycleForecast?,
-    onNavigateToAddEntry: (String) -> Unit,
+    onNavigateToAddEntry: (String, Boolean) -> Unit,
     onNavigateToEditEntry: (Long) -> Unit,
     onNavigateToEntriesList: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val selectedEntry: MutableState<MoodEntry?> = remember { mutableStateOf(null) }
-    val showSheet = remember { mutableStateOf(false) }
-    val startMonth = YearMonth.now().minusMonths(12)
-    val endMonth = YearMonth.now().plusMonths(12)
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var highlightedDate by remember { mutableStateOf(LocalDate.now()) }
-    val coroutineScope = rememberCoroutineScope()
-    val calendarState = rememberCalendarState(
-        startMonth = startMonth,
-        endMonth = endMonth,
-        firstVisibleMonth = YearMonth.now(),
-        firstDayOfWeek = firstDayOfWeekFromLocale()
-    )
+    val haptics = LocalHapticFeedback.current
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        ForecastSummaryCard(cycleForecast = cycleForecast)
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = {
-                        val target = currentMonth.minusMonths(1)
-                        currentMonth = target
-                        coroutineScope.launch { calendarState.animateScrollToMonth(target) }
-                    }) {
-                        Icon(Icons.Rounded.ChevronLeft, contentDescription = stringResource(id = R.string.back))
-                    }
-                    Text(
-                        text = currentMonth.format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale.getDefault())).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    IconButton(onClick = {
-                        val target = currentMonth.plusMonths(1)
-                        currentMonth = target
-                        coroutineScope.launch { calendarState.animateScrollToMonth(target) }
-                    }) {
-                        Icon(Icons.Rounded.ChevronRight, contentDescription = stringResource(id = R.string.next_month))
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalCalendar(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    state = calendarState,
-                    dayContent = { day ->
-                        val entry = entries.firstOrNull { it.date.toLocalDate().toString() == day.date.toString() }
-                        CalendarDayCell(
-                            day = day,
-                            entry = entry,
-                            isPrediction = cycleForecast?.let {
-                                val windowStart = it.windowStart?.toJavaDate()
-                                val windowEnd = it.windowEnd?.toJavaDate()
-                                if (windowStart != null && windowEnd != null) {
-                                    (day.date >= windowStart && day.date <= windowEnd)
-                                } else false
-                            } ?: false,
-                            isSelected = day.date == highlightedDate,
-                            onEntrySelected = {
-                                selectedEntry.value = entry
-                                showSheet.value = true
-                                highlightedDate = day.date
-                            },
-                            onAddEntry = {
-                                highlightedDate = day.date
-                                onNavigateToAddEntry(day.date.toString())
-                            }
-                        )
-                    }
-                )
-            }
-        }
-        ActionRow(onNavigateToEntriesList = onNavigateToEntriesList)
-        Spacer(modifier = Modifier.height(8.dp))
-        AdBanner(modifier = Modifier.fillMaxWidth())
+    val startMonth = remember { YearMonth.now().minusMonths(12) }
+    val months = remember {
+        (0..24).map { offset -> startMonth.plusMonths(offset.toLong()) }
+    }
+    val currentMonthIndex = remember { months.indexOf(YearMonth.now()).takeIf { it >= 0 } ?: months.lastIndex }
+    val pagerState = rememberPagerState(initialPage = currentMonthIndex, pageCount = { months.size })
+
+    val firstDayOfWeek = remember { WeekFields.of(Locale.getDefault()).firstDayOfWeek }
+    val entriesByDate = remember(entries) {
+        entries.groupBy { it.date.toLocalDate().toJavaLocalDate() }.mapValues { it.value.last() }
+    }
+    val menstruationLabels = remember(entries) { buildMenstruationLabels(entries) }
+    val forecastRange = remember(cycleForecast) {
+        val start = cycleForecast?.windowStart?.toJavaLocalDate()
+        val end = cycleForecast?.windowEnd?.toJavaLocalDate()
+        if (start != null && end != null) start..end else null
     }
 
-    if (showSheet.value && selectedEntry.value != null) {
-        ModalBottomSheet(
-            onDismissRequest = { showSheet.value = false },
-            sheetState = sheetState
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var isSheetVisible by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            selectedEntry.value?.let { entry ->
-                DayDetailsContent(
-                    entry = entry,
-                    onEdit = {
-                        onNavigateToEditEntry(entry.id)
-                        showSheet.value = false
+            ForecastSummaryCard(cycleForecast = cycleForecast)
+
+            AnimatedContent(
+                targetState = months[pagerState.currentPage],
+                label = "month_header",
+                transitionSpec = {
+                    (fadeIn(animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow)) with
+                        fadeOut(animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow)))
+                }
+            ) { month ->
+                MonthHeader(
+                    yearMonth = month,
+                    onPrevious = {
+                        if (pagerState.currentPage > 0) {
+                            scope.launch {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage - 1,
+                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
+                                )
+                            }
+                        }
                     },
-                    onClose = { showSheet.value = false }
+                    onNext = {
+                        if (pagerState.currentPage < months.lastIndex) {
+                            scope.launch {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage + 1,
+                                    animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
+                                )
+                            }
+                        }
+                    }
                 )
             }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+            ) { page ->
+                val month = months[page]
+                val days = remember(month) { buildMonthDays(month, firstDayOfWeek) }
+                MonthGrid(
+                    days = days,
+                    entriesByDate = entriesByDate,
+                    menstruationLabels = menstruationLabels,
+                    forecastRange = forecastRange,
+                    selectedDate = selectedDate,
+                    onDayClick = { date ->
+                        selectedDate = date
+                        isSheetVisible = true
+                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    }
+                )
+            }
+
+            ActionRow(onNavigateToEntriesList = onNavigateToEntriesList)
+            AdBanner(modifier = Modifier.fillMaxWidth())
+        }
+    }
+
+    val activeDate = selectedDate
+    val activeEntry = activeDate?.let { entriesByDate[it] }
+    if (isSheetVisible && activeDate != null) {
+        ModalBottomSheet(
+            onDismissRequest = { isSheetVisible = false },
+            sheetState = sheetState
+        ) {
+            DayDetailsSheet(
+                date = activeDate,
+                entry = activeEntry,
+                onNavigateToEditEntry = {
+                    activeEntry?.let { onNavigateToEditEntry(it.id) }
+                    isSheetVisible = false
+                },
+                onAddPeriodStart = {
+                    scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.entry_saved)) }
+                    onNavigateToAddEntry(activeDate.toString(), true)
+                    isSheetVisible = false
+                },
+                onAddPeriodEnd = {
+                    scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.entry_saved)) }
+                    onNavigateToAddEntry(activeDate.toString(), false)
+                    isSheetVisible = false
+                },
+                onClose = { isSheetVisible = false }
+            )
         }
     }
 }
 
 @Composable
-private fun ForecastSummaryCard(cycleForecast: CycleForecast?) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(text = stringResource(id = R.string.cycle_prediction), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            if (cycleForecast == null || cycleForecast.insufficientData) {
-                Text(text = stringResource(id = R.string.insufficient_data_hint), style = MaterialTheme.typography.bodyMedium)
-            } else {
-                val formatter = ThreeTenFormatter.ofPattern("d MMM", Locale.getDefault())
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = stringResource(id = R.string.next_period), style = MaterialTheme.typography.labelMedium)
-                        Text(text = cycleForecast.predictedStartDate?.format(formatter) ?: "—", style = MaterialTheme.typography.headlineSmall)
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = stringResource(id = R.string.forecast_confidence_label), style = MaterialTheme.typography.labelMedium)
-                        Text(text = stringResource(id = cycleForecast.confidenceLevel.labelRes), style = MaterialTheme.typography.headlineSmall)
-                    }
-                }
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp),
-                    progress = cycleForecast.confidenceScore.toFloat().coerceIn(0f, 1f)
-                )
-            }
+private fun MonthHeader(
+    yearMonth: YearMonth,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPrevious) {
+            Icon(Icons.Rounded.ChevronLeft, contentDescription = stringResource(id = R.string.back))
+        }
+        Text(
+            text = yearMonth.format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale.getDefault()))
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        IconButton(onClick = onNext) {
+            Icon(Icons.Rounded.ChevronRight, contentDescription = stringResource(id = R.string.next_month))
+        }
+    }
+}
+
+@Composable
+private fun MonthGrid(
+    days: List<DayCell>,
+    entriesByDate: Map<LocalDate, MoodEntry>,
+    menstruationLabels: Map<LocalDate, Int>,
+    forecastRange: ClosedRange<LocalDate>?,
+    selectedDate: LocalDate?,
+    onDayClick: (LocalDate) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(7),
+        userScrollEnabled = false,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(360.dp)
+    ) {
+        items(days, key = { it.date }) { day ->
+            val entry = entriesByDate[day.date]
+            val menstruationLabel = menstruationLabels[day.date]
+            val isForecast = forecastRange?.let { day.date in it } ?: false
+            CalendarDayCell(
+                day = day,
+                entry = entry,
+                menstruationLabel = menstruationLabel,
+                isForecast = isForecast,
+                isSelected = selectedDate == day.date,
+                onDayClick = { onDayClick(day.date) }
+            )
         }
     }
 }
 
 @Composable
 private fun CalendarDayCell(
-    day: CalendarDay,
+    day: DayCell,
     entry: MoodEntry?,
-    isPrediction: Boolean,
+    menstruationLabel: Int?,
+    isForecast: Boolean,
     isSelected: Boolean,
-    onEntrySelected: () -> Unit,
-    onAddEntry: () -> Unit
+    onDayClick: () -> Unit
 ) {
-    val menstruationHighlight = MenstruationPink
-    val today = LocalDate.now()
-    val baseColor = when {
-        day.position != DayPosition.MonthDate -> MaterialTheme.colorScheme.surfaceVariant
-        entry?.isPeriod == true -> menstruationHighlight
-        day.date == today -> MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-        else -> Color.Transparent
-    }
-    val animatedBackground by animateColorAsState(
-        targetValue = if (isSelected && day.position == DayPosition.MonthDate) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else baseColor,
-        label = "dayBackground"
+    val indicatorColor = entry?.let { colorForMood(it.moodLevel) } ?: MaterialTheme.colorScheme.secondary
+    val isToday = day.date == LocalDate.now()
+    val backgroundColor by animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "selection_alpha"
     )
-    val forecastBrush = if (isPrediction) {
-        Brush.verticalGradient(
-            listOf(ForecastPink.copy(alpha = 0.65f), Color.Transparent)
-        )
-    } else {
-        null
+    val containerColor = Color.White.copy(alpha = backgroundColor * 0.8f)
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0.97f,
+        animationSpec = spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow),
+        label = "selection_scale"
+    )
+    val alpha by animateFloatAsState(targetValue = if (day.isCurrentMonth) 1f else 0.4f, label = "month_alpha")
+    val semanticsDescription = buildString {
+        append(day.date.format(DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault())))
+        if (entry != null) {
+            append(". ")
+            append(localizedMoodLabel(entry.moodLevel))
+            if (entry.symptoms.isNotEmpty()) {
+                append(". ")
+                append(entry.symptoms.take(3).joinToString())
+            }
+        }
+        if (menstruationLabel != null) {
+            append(". ")
+            append("Day $menstruationLabel")
+        }
     }
+
     Box(
         modifier = Modifier
-            .padding(2.dp)
-            .clip(MaterialTheme.shapes.small)
-            .background(animatedBackground)
-            .clickable(enabled = day.position == DayPosition.MonthDate) {
-                if (entry != null) onEntrySelected() else onAddEntry()
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
             }
-            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.08f))
+            .border(
+                width = if (isSelected) 1.dp else 0.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .background(color = containerColor.copy(alpha = 0.2f))
+            .padding(6.dp)
+            .semantics { contentDescription = semanticsDescription }
+            .clickable(
+                onClick = onDayClick,
+                enabled = day.isCurrentMonth
+            )
     ) {
-        forecastBrush?.let { brush ->
+        if (isForecast) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(MaterialTheme.shapes.small)
-                    .background(brush = brush)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(ForecastPink.copy(alpha = 0.5f), Color.Transparent)
+                        )
+                    )
             )
         }
         Column(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(2.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = day.date.dayOfMonth.toString(), style = MaterialTheme.typography.bodyMedium)
-            entry?.let {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = if (isToday) 2.dp else 0.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        shape = CircleShape
+                    )
+            ) {
+                Text(
+                    text = day.date.dayOfMonth.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
+                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium
+                )
+            }
+
+            if (menstruationLabel != null) {
+                Text(
+                    text = "D$menstruationLabel",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MenstruationPink.copy(alpha = 0.45f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(2.dp))
+            }
+
+            if (entry?.symptoms?.isNotEmpty() == true) {
+                SymptomDots(entry.symptoms)
+            } else {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            if (entry != null || isToday) {
                 Box(
                     modifier = Modifier
-                        .height(6.dp)
-                        .width(24.dp)
-                        .clip(MaterialTheme.shapes.extraSmall)
-                        .background(colorForMood(it.moodLevel))
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(indicatorColor)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SymptomDots(symptoms: List<String>) {
+    val colors = listOf(
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.tertiary
+    )
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        symptoms.take(3).forEachIndexed { index, _ ->
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(colors[index % colors.size])
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DayDetailsSheet(
+    date: LocalDate,
+    entry: MoodEntry?,
+    onNavigateToEditEntry: () -> Unit,
+    onAddPeriodStart: () -> Unit,
+    onAddPeriodEnd: () -> Unit,
+    onClose: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.getDefault()))
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        entry?.let {
+            Text(text = localizedMoodLabel(it.moodLevel), style = MaterialTheme.typography.bodyLarge)
+            Text(text = localizedPhaseLabel(it.cyclePhase), style = MaterialTheme.typography.bodyMedium)
+            if (it.symptoms.isNotEmpty()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    it.symptoms.take(6).forEach { symptom ->
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(symptom) },
+                            colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    }
+                }
+            }
+            it.note?.takeIf { note -> note.isNotBlank() }?.let { note ->
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            TextButton(onClick = onNavigateToEditEntry) {
+                Text(text = stringResource(id = R.string.edit))
+            }
+        } ?: Text(
+            text = stringResource(id = R.string.no_entries_placeholder),
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = onAddPeriodStart,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = stringResource(id = R.string.cta_period_start))
+            }
+            Button(
+                onClick = onAddPeriodEnd,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = stringResource(id = R.string.cta_period_end))
+            }
+        }
+
+        TextButton(onClick = onClose, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text(text = stringResource(id = R.string.close))
+        }
+    }
+}
+
+@Composable
+private fun ForecastSummaryCard(cycleForecast: CycleForecast?) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = stringResource(id = R.string.cycle_prediction),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (cycleForecast == null || cycleForecast.insufficientData) {
+                Text(text = stringResource(id = R.string.insufficient_data_hint), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = stringResource(id = R.string.next_period), style = MaterialTheme.typography.labelMedium)
+                        Text(text = cycleForecast.predictedStartDate?.toJavaLocalDate()?.format(formatter) ?: "—", style = MaterialTheme.typography.headlineSmall)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = stringResource(id = R.string.forecast_confidence_label), style = MaterialTheme.typography.labelMedium)
+                        Text(text = stringResource(id = cycleForecast.confidenceLevel.labelRes), style = MaterialTheme.typography.headlineSmall)
+                    }
+                }
             }
         }
     }
@@ -282,7 +541,10 @@ private fun CalendarDayCell(
 
 @Composable
 private fun ActionRow(onNavigateToEntriesList: () -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        shape = RoundedCornerShape(18.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -290,7 +552,11 @@ private fun ActionRow(onNavigateToEntriesList: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = stringResource(id = R.string.entries_list), color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Text(
+                text = stringResource(id = R.string.entries_list),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.titleMedium
+            )
             TextButton(onClick = onNavigateToEntriesList) {
                 Text(text = stringResource(id = R.string.view_entries))
             }
@@ -298,42 +564,59 @@ private fun ActionRow(onNavigateToEntriesList: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun DayDetailsContent(
-    entry: MoodEntry,
-    onEdit: () -> Unit,
-    onClose: () -> Unit
-) {
-    val formatter = remember { ThreeTenFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.getDefault()) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(text = entry.date.format(formatter), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text(text = localizedMoodLabel(entry.moodLevel), style = MaterialTheme.typography.bodyLarge)
-        Text(text = localizedPhaseLabel(entry.cyclePhase), style = MaterialTheme.typography.bodyMedium)
-        if (entry.symptoms.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                entry.symptoms.forEach { symptom ->
-                    AssistChip(onClick = {}, label = { Text(symptom) })
-                }
-            }
-        }
-        entry.note?.takeIf { it.isNotBlank() }?.let { note ->
-            Text(text = note, style = MaterialTheme.typography.bodySmall)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-            TextButton(onClick = onClose, modifier = Modifier.weight(1f)) {
-                Text(text = stringResource(id = R.string.close))
-            }
-            TextButton(onClick = onEdit, modifier = Modifier.weight(1f)) {
-                Text(text = stringResource(id = R.string.edit))
-            }
-        }
+private data class DayCell(
+    val date: LocalDate,
+    val isCurrentMonth: Boolean
+)
+
+private fun buildMonthDays(yearMonth: YearMonth, firstDayOfWeek: java.time.DayOfWeek): List<DayCell> {
+    val firstOfMonth = yearMonth.atDay(1)
+    val lastOfMonth = yearMonth.atEndOfMonth()
+    val daysBefore = ((firstOfMonth.dayOfWeek.value - firstDayOfWeek.value + 7) % 7)
+    val totalDays = ((daysBefore + lastOfMonth.dayOfMonth).coerceAtLeast(42))
+    val firstDisplayDate = firstOfMonth.minusDays(daysBefore.toLong())
+    return (0 until 42).map { index ->
+        val date = firstDisplayDate.plusDays(index.toLong())
+        DayCell(date = date, isCurrentMonth = date.month == yearMonth.month)
     }
+}
+
+private fun buildMenstruationLabels(entries: List<MoodEntry>): Map<LocalDate, Int> {
+    val periodDates = entries.filter { it.isPeriod }.map { it.date.toLocalDate().toJavaLocalDate() }.sorted()
+    if (periodDates.isEmpty()) return emptyMap()
+    val labels = mutableMapOf<LocalDate, Int>()
+    var currentLabel = 0
+    var previousDate: LocalDate? = null
+    periodDates.forEach { date ->
+        currentLabel = if (previousDate == null || date.minusDays(1) != previousDate) 1 else currentLabel + 1
+        labels[date] = currentLabel
+        previousDate = date
+    }
+    return labels
+}
+
+private fun org.threeten.bp.LocalDate.toJavaLocalDate(): LocalDate = LocalDate.parse(this.toString())
+
+private fun org.threeten.bp.LocalDateTime.toJavaLocalDate(): LocalDate = LocalDate.parse(this.toLocalDate().toString())
+
+@Composable
+private fun localizedMoodLabel(level: MoodLevel): String = when (level) {
+    MoodLevel.VERY_BAD -> stringResource(id = R.string.mood_very_bad)
+    MoodLevel.BAD -> stringResource(id = R.string.mood_bad)
+    MoodLevel.NEUTRAL -> stringResource(id = R.string.mood_neutral)
+    MoodLevel.GOOD -> stringResource(id = R.string.mood_good)
+    MoodLevel.VERY_GOOD -> stringResource(id = R.string.mood_very_good)
+    MoodLevel.EXCELLENT -> stringResource(id = R.string.mood_excellent)
+}
+
+@Composable
+private fun localizedPhaseLabel(phase: CyclePhase): String = when (phase) {
+    CyclePhase.MENSTRUATION -> stringResource(id = R.string.phase_menstruation)
+    CyclePhase.FOLLICULAR -> stringResource(id = R.string.phase_follicular)
+    CyclePhase.OVULATION -> stringResource(id = R.string.phase_ovulation)
+    CyclePhase.LUTEAL -> stringResource(id = R.string.phase_luteal)
+    CyclePhase.PMS -> stringResource(id = R.string.phase_pms)
+    CyclePhase.NONE -> stringResource(id = R.string.phase_none)
 }
 
 private fun colorForMood(level: MoodLevel): Color = when (level) {
@@ -344,29 +627,3 @@ private fun colorForMood(level: MoodLevel): Color = when (level) {
     MoodLevel.VERY_GOOD -> Color(0xFF1976D2)
     MoodLevel.EXCELLENT -> Color(0xFFD81B60)
 }
-
-private fun org.threeten.bp.LocalDate.toJavaDate(): LocalDate = LocalDate.parse(this.toString())
-
-@Composable
-private fun localizedMoodLabel(level: MoodLevel): String = stringResource(
-    when (level) {
-        MoodLevel.VERY_BAD -> R.string.mood_very_bad
-        MoodLevel.BAD -> R.string.mood_bad
-        MoodLevel.NEUTRAL -> R.string.mood_neutral
-        MoodLevel.GOOD -> R.string.mood_good
-        MoodLevel.VERY_GOOD -> R.string.mood_very_good
-        MoodLevel.EXCELLENT -> R.string.mood_excellent
-    }
-)
-
-@Composable
-private fun localizedPhaseLabel(phase: CyclePhase): String = stringResource(
-    when (phase) {
-        CyclePhase.MENSTRUATION -> R.string.phase_menstruation
-        CyclePhase.FOLLICULAR -> R.string.phase_follicular
-        CyclePhase.OVULATION -> R.string.phase_ovulation
-        CyclePhase.LUTEAL -> R.string.phase_luteal
-        CyclePhase.PMS -> R.string.phase_pms
-        CyclePhase.NONE -> R.string.phase_none
-    }
-)
