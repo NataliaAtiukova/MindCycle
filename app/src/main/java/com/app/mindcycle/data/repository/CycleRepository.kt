@@ -24,14 +24,20 @@ class CycleRepository(
     val modeFlow: Flow<CycleMode> = preferences.modeFlow
     val reminderConfigsFlow: Flow<Map<ReminderType, ReminderConfig>> = preferences.reminderConfigs
 
-    suspend fun loadEntries(monthsBack: Long = 6): List<MoodEntry> {
-        val endDate = LocalDateTime.now()
-        val startDate = endDate.minus(monthsBack, ChronoUnit.MONTHS)
+    suspend fun loadEntries(monthsBack: Long = 6, monthsForward: Long = 6): List<MoodEntry> {
+        val now = LocalDateTime.now()
+        val startDate = now.minus(monthsBack, ChronoUnit.MONTHS)
+        val endDate = now.plus(monthsForward, ChronoUnit.MONTHS)
         return dao.getEntriesBetweenDates(startDate, endDate)
     }
 
     suspend fun addEntry(entry: MoodEntry) {
-        dao.insertEntry(entry)
+        val date = entry.date
+        val startOfDay = date.withHour(0).withMinute(0).withSecond(0).withNano(0)
+        val endOfDay = startOfDay.plusDays(1).minusNanos(1)
+        val existing = dao.getEntryForDate(startOfDay, endOfDay)
+        val normalized = entry.copy(id = existing?.id ?: entry.id)
+        dao.insertEntry(normalized)
     }
 
     suspend fun deleteEntry(entry: MoodEntry) {

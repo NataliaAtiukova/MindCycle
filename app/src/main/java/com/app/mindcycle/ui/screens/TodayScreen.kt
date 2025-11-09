@@ -85,7 +85,7 @@ import java.util.Locale
 @Composable
 fun TodayScreen(
     uiState: MainUiState,
-    onNavigateToAddEntry: (String, Boolean, String?) -> Unit,
+    onNavigateToAddEntry: (String, Boolean, Boolean, String?) -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToEntries: () -> Unit,
     onRecordContraception: (ContraceptionMethod) -> Unit,
@@ -164,11 +164,11 @@ fun TodayScreen(
                 isLoading = uiState.isLoading,
                 onStart = {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onNavigateToAddEntry(today.toString(), true, null)
+                    onNavigateToAddEntry(today.toString(), true, true, null)
                 },
                 onEnd = {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onNavigateToAddEntry(today.toString(), false, null)
+                    onNavigateToAddEntry(today.toString(), false, true, null)
                 },
                 onOpenSymptomJournal = onOpenSymptomJournal
             )
@@ -179,7 +179,7 @@ fun TodayScreen(
                 isLoading = uiState.isLoading,
                 onChipSelected = { symptom ->
                     haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    onNavigateToAddEntry(today.toString(), false, symptom)
+                    onNavigateToAddEntry(today.toString(), false, false, symptom)
                 }
             )
         }

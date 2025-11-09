@@ -91,7 +91,7 @@ import kotlinx.coroutines.launch
 fun CalendarScreen(
     entries: List<MoodEntry>,
     cycleForecast: CycleForecast?,
-    onNavigateToAddEntry: (String, Boolean) -> Unit,
+    onNavigateToAddEntry: (String, Boolean, Boolean) -> Unit,
     onNavigateToEditEntry: (Long) -> Unit,
     onNavigateToEntriesList: () -> Unit
 ) {
@@ -210,12 +210,12 @@ fun CalendarScreen(
                 },
                 onAddPeriodStart = {
                     scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.entry_saved)) }
-                    onNavigateToAddEntry(activeDate.toString(), true)
+                    onNavigateToAddEntry(activeDate.toString(), true, true)
                     isSheetVisible = false
                 },
                 onAddPeriodEnd = {
                     scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.entry_saved)) }
-                    onNavigateToAddEntry(activeDate.toString(), false)
+                    onNavigateToAddEntry(activeDate.toString(), false, true)
                     isSheetVisible = false
                 },
                 onClose = { isSheetVisible = false }

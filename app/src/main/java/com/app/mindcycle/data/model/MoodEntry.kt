@@ -20,10 +20,6 @@ data class MoodEntry(
     val isPeriodStart: Boolean = false,
     val isPeriod: Boolean = false
 ) {
-    init {
-        require(date <= LocalDateTime.now()) { "Date cannot be in the future" }
-    }
-
     companion object {
         fun create(
             date: LocalDateTime = LocalDateTime.now(),

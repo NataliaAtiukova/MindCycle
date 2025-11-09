@@ -65,6 +65,7 @@ object AppDestinations {
     const val ENTRY_ID_ARG = "entryId"
     const val DATE_ARG = "date"
     const val PERIOD_START_ARG = "periodStart"
+    const val PERIOD_DAY_ARG = "periodDay"
     const val SYMPTOM_ARG = "symptom"
 }
 
@@ -145,10 +146,14 @@ fun AppNavigation(
                 composable(AppDestinations.TODAY_ROUTE) {
                 TodayScreen(
                     uiState = uiState,
-                    onNavigateToAddEntry = { date, isPeriodStart, symptom ->
+                    onNavigateToAddEntry = { date, isPeriodStart, isPeriodDay, symptom ->
                         val encodedSymptom = symptom?.let { Uri.encode(it) } ?: ""
                         navController.navigate(
-                            "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=$date&${AppDestinations.PERIOD_START_ARG}=$isPeriodStart&${AppDestinations.SYMPTOM_ARG}=$encodedSymptom"
+                            "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
+                                "${AppDestinations.DATE_ARG}=$date&" +
+                                "${AppDestinations.PERIOD_START_ARG}=$isPeriodStart&" +
+                                "${AppDestinations.PERIOD_DAY_ARG}=$isPeriodDay&" +
+                                "${AppDestinations.SYMPTOM_ARG}=$encodedSymptom"
                         )
                     },
                     onNavigateToCalendar = {
@@ -174,10 +179,12 @@ fun AppNavigation(
                 CalendarScreen(
                     entries = uiState.entries,
                     cycleForecast = uiState.forecast,
-                    onNavigateToAddEntry = { date, isPeriodStart ->
+                    onNavigateToAddEntry = { date, isPeriodStart, isPeriodDay ->
                         navController.navigate(
                             "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
-                                "${AppDestinations.DATE_ARG}=$date&${AppDestinations.PERIOD_START_ARG}=$isPeriodStart"
+                                "${AppDestinations.DATE_ARG}=$date&" +
+                                "${AppDestinations.PERIOD_START_ARG}=$isPeriodStart&" +
+                                "${AppDestinations.PERIOD_DAY_ARG}=$isPeriodDay"
                         )
                     },
                     onNavigateToEditEntry = { entryId ->
@@ -216,7 +223,7 @@ fun AppNavigation(
             }
 
             composable(
-                    route = "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}={${AppDestinations.ENTRY_ID_ARG}}&${AppDestinations.DATE_ARG}={${AppDestinations.DATE_ARG}}&${AppDestinations.PERIOD_START_ARG}={${AppDestinations.PERIOD_START_ARG}}&${AppDestinations.SYMPTOM_ARG}={${AppDestinations.SYMPTOM_ARG}}",
+                    route = "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}={${AppDestinations.ENTRY_ID_ARG}}&${AppDestinations.DATE_ARG}={${AppDestinations.DATE_ARG}}&${AppDestinations.PERIOD_START_ARG}={${AppDestinations.PERIOD_START_ARG}}&${AppDestinations.PERIOD_DAY_ARG}={${AppDestinations.PERIOD_DAY_ARG}}&${AppDestinations.SYMPTOM_ARG}={${AppDestinations.SYMPTOM_ARG}}",
                     arguments = listOf(
                         navArgument(AppDestinations.ENTRY_ID_ARG) {
                             type = androidx.navigation.NavType.LongType
@@ -230,6 +237,10 @@ fun AppNavigation(
                             type = androidx.navigation.NavType.BoolType
                             defaultValue = false
                         },
+                        navArgument(AppDestinations.PERIOD_DAY_ARG) {
+                            type = androidx.navigation.NavType.BoolType
+                            defaultValue = false
+                        },
                         navArgument(AppDestinations.SYMPTOM_ARG) {
                             type = androidx.navigation.NavType.StringType
                             defaultValue = ""
@@ -240,6 +251,9 @@ fun AppNavigation(
                     val dateStr = backStackEntry.arguments?.getString(AppDestinations.DATE_ARG)
                     val preselectPeriodStart =
                         backStackEntry.arguments?.getBoolean(AppDestinations.PERIOD_START_ARG)
+                            ?: false
+                    val preselectPeriodDay =
+                        backStackEntry.arguments?.getBoolean(AppDestinations.PERIOD_DAY_ARG)
                             ?: false
                     val quickSymptom =
                         backStackEntry.arguments?.getString(AppDestinations.SYMPTOM_ARG)
@@ -259,6 +273,7 @@ fun AppNavigation(
                         entryToEdit = entryToEdit,
                         initialDate = initialDate,
                         defaultIsPeriodStart = preselectPeriodStart,
+                        defaultIsPeriodDay = preselectPeriodDay,
                         quickSymptom = quickSymptom,
                         onSaveEntry = { entry ->
                             onAddEntry(entry)
@@ -291,7 +306,13 @@ fun AppNavigation(
                     onNavigateBack = { navController.navigateUp() },
                     onQuickAdd = { symptom ->
                         val encoded = Uri.encode(symptom)
-                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&${AppDestinations.DATE_ARG}=${org.threeten.bp.LocalDate.now()}&${AppDestinations.PERIOD_START_ARG}=false&${AppDestinations.SYMPTOM_ARG}=$encoded")
+                        navController.navigate(
+                            "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
+                                "${AppDestinations.DATE_ARG}=${org.threeten.bp.LocalDate.now()}&" +
+                                "${AppDestinations.PERIOD_START_ARG}=false&" +
+                                "${AppDestinations.PERIOD_DAY_ARG}=false&" +
+                                "${AppDestinations.SYMPTOM_ARG}=$encoded"
+                        )
                     }
                 )
             }

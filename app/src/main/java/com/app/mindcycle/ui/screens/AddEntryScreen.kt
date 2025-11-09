@@ -67,13 +67,16 @@ fun AddEntryScreen(
     entryToEdit: MoodEntry?,
     initialDate: LocalDateTime?,
     defaultIsPeriodStart: Boolean = false,
+    defaultIsPeriodDay: Boolean = false,
     quickSymptom: String? = null,
     onNavigateBack: () -> Unit,
     onSaveEntry: (MoodEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedMood by remember { mutableStateOf(entryToEdit?.moodLevel) }
-    var selectedPhase by remember { mutableStateOf(entryToEdit?.cyclePhase) }
+    val defaultMood = entryToEdit?.moodLevel ?: if (defaultIsPeriodStart || defaultIsPeriodDay) MoodLevel.NEUTRAL else null
+    val defaultPhase = entryToEdit?.cyclePhase ?: if (defaultIsPeriodStart || defaultIsPeriodDay) CyclePhase.MENSTRUATION else null
+    var selectedMood by remember { mutableStateOf(defaultMood) }
+    var selectedPhase by remember { mutableStateOf(defaultPhase) }
     var note by remember { mutableStateOf(entryToEdit?.note ?: "") }
     var isPeriodStart by remember { mutableStateOf(entryToEdit?.isPeriodStart ?: defaultIsPeriodStart) }
     var selectedSymptoms by remember { mutableStateOf(entryToEdit?.symptoms?.toSet() ?: quickSymptom?.let { setOf(it) } ?: emptySet()) }
@@ -594,24 +597,33 @@ fun AddEntryScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            val allowAutoDefaults = entryToEdit == null && (defaultIsPeriodStart || defaultIsPeriodDay)
             Button(
                 onClick = {
-                    if (selectedMood != null && selectedPhase != null) {
+                    val finalMood = selectedMood ?: MoodLevel.NEUTRAL
+                    val finalPhase = selectedPhase ?: when {
+                        defaultIsPeriodStart || defaultIsPeriodDay -> CyclePhase.MENSTRUATION
+                        isPeriodStart -> CyclePhase.MENSTRUATION
+                        else -> CyclePhase.NONE
+                    }
+                    if (selectedMood != null && selectedPhase != null || allowAutoDefaults) {
+                        val isPeriodEntry = isPeriodStart || defaultIsPeriodDay || finalPhase == CyclePhase.MENSTRUATION
                         val entry = MoodEntry(
                             id = entryToEdit?.id ?: 0,
                             date = entryDate,
-                            moodLevel = selectedMood!!,
-                            cyclePhase = selectedPhase!!,
+                            moodLevel = finalMood,
+                            cyclePhase = finalPhase,
                             note = note,
                             symptoms = selectedSymptoms.toList(),
-                            isPeriodStart = isPeriodStart
+                            isPeriodStart = isPeriodStart,
+                            isPeriod = isPeriodEntry
                         )
                         onSaveEntry(entry)
                         onNavigateBack()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = selectedMood != null && selectedPhase != null
+                enabled = (selectedMood != null && selectedPhase != null) || allowAutoDefaults
             ) {
                 Text(stringResource(R.string.save))
             }

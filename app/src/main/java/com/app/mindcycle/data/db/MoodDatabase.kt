@@ -39,6 +39,9 @@ interface MoodEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(entries: List<MoodEntry>)
 
+    @Query("SELECT * FROM mood_entries WHERE date BETWEEN :startOfDay AND :endOfDay LIMIT 1")
+    suspend fun getEntryForDate(startOfDay: LocalDateTime, endOfDay: LocalDateTime): MoodEntry?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertContraceptionEntry(entry: ContraceptionLogEntry)
 
