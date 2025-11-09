@@ -7,8 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,17 +24,17 @@ import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
 import org.threeten.bp.format.DateTimeFormatter
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.tooling.preview.Preview
 import org.threeten.bp.LocalDateTime
 
 private val moodIcons = mapOf(
-    MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
-    MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
-    MoodLevel.NEUTRAL to Icons.Filled.Psychology,
-    MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
-    MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
-    MoodLevel.EXCELLENT to Icons.Filled.Star
+    MoodLevel.VERY_BAD to Icons.Rounded.MoodBad,
+    MoodLevel.BAD to Icons.Rounded.SentimentDissatisfied,
+    MoodLevel.NEUTRAL to Icons.Rounded.Psychology,
+    MoodLevel.GOOD to Icons.Rounded.SentimentSatisfied,
+    MoodLevel.VERY_GOOD to Icons.Rounded.SentimentVerySatisfied,
+    MoodLevel.EXCELLENT to Icons.Rounded.Star
 )
 
 private val moodLabels = mapOf(
@@ -47,12 +47,12 @@ private val moodLabels = mapOf(
 )
 
 private val phaseIcons = mapOf(
-    CyclePhase.MENSTRUATION to Icons.Filled.Bloodtype,
-    CyclePhase.FOLLICULAR to Icons.Filled.Spa,
-    CyclePhase.OVULATION to Icons.Filled.WbSunny,
-    CyclePhase.LUTEAL to Icons.Filled.Nightlight,
-    CyclePhase.PMS to Icons.Filled.MoodBad,
-    CyclePhase.NONE to Icons.Filled.RemoveCircle
+    CyclePhase.MENSTRUATION to Icons.Rounded.Bloodtype,
+    CyclePhase.FOLLICULAR to Icons.Rounded.Spa,
+    CyclePhase.OVULATION to Icons.Rounded.WbSunny,
+    CyclePhase.LUTEAL to Icons.Rounded.Nightlight,
+    CyclePhase.PMS to Icons.Rounded.MoodBad,
+    CyclePhase.NONE to Icons.Rounded.RemoveCircle
 )
 
 private val phaseLabels = mapOf(
@@ -104,13 +104,13 @@ fun EntriesListScreen(
                         
                         // Mood
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(moodIcons[entry.moodLevel] ?: Icons.Default.HelpOutline, contentDescription = stringResource(R.string.mood), modifier = Modifier.padding(end = 8.dp))
+                            Icon(moodIcons[entry.moodLevel] ?: Icons.Rounded.HelpOutline, contentDescription = stringResource(R.string.mood), modifier = Modifier.padding(end = 8.dp))
                             Text(stringResource(moodLabels[entry.moodLevel] ?: R.string.mood_unknown))
                         }
                         
                         // Cycle Phase
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(phaseIcons[entry.cyclePhase] ?: Icons.Default.HelpOutline, contentDescription = stringResource(R.string.phase), modifier = Modifier.padding(end = 8.dp))
+                            Icon(phaseIcons[entry.cyclePhase] ?: Icons.Rounded.HelpOutline, contentDescription = stringResource(R.string.phase), modifier = Modifier.padding(end = 8.dp))
                             Text(stringResource(phaseLabels[entry.cyclePhase] ?: R.string.phase_unknown))
                         }
 
@@ -215,7 +215,7 @@ private fun EntryCard(
                 }
             }
             Icon(
-                imageVector = Icons.Default.Edit,
+                imageVector = Icons.Rounded.Edit,
                 contentDescription = stringResource(R.string.edit),
                 tint = MaterialTheme.colorScheme.primary
             )

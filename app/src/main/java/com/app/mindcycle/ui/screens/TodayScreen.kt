@@ -17,11 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.ListAlt
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.ListAlt
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,6 +70,7 @@ import com.app.mindcycle.data.model.ContraceptionMethod
 import com.app.mindcycle.data.model.CycleForecast
 import com.app.mindcycle.data.model.ReminderConfig
 import com.app.mindcycle.data.model.ReminderType
+import com.app.mindcycle.ui.theme.BackgroundGradientEnd
 import com.app.mindcycle.ui.viewmodel.MainUiState
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -96,15 +99,42 @@ fun TodayScreen(
     }
     val haptics = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
+    val isDarkTheme = isSystemInDarkTheme()
+    val gradientColors = if (isDarkTheme) {
+        listOf(
+            MaterialTheme.colorScheme.surface,
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+        )
+    } else {
+        listOf(
+            MaterialTheme.colorScheme.background,
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+            BackgroundGradientEnd
+        )
+    }
+    val gradientBackground = Brush.verticalGradient(colors = gradientColors)
+    val containerShape = MaterialTheme.shapes.extraLarge
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        state = lazyListState,
-        contentPadding = PaddingValues(vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clip(containerShape)
+                .background(gradientBackground)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                state = lazyListState,
+                contentPadding = PaddingValues(vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
         item {
             Column {
                 Text(
@@ -170,8 +200,11 @@ fun TodayScreen(
                 onOpenReminders = onOpenReminders
             )
         }
+        }
     }
 }
+}
+
 
 @Composable
 private fun CycleOverviewCard(
@@ -285,12 +318,12 @@ private fun CycleOverviewCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onOpenCalendar, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Outlined.CalendarMonth, contentDescription = null)
+                    Icon(Icons.Rounded.CalendarMonth, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.open_calendar))
                 }
                 OutlinedButton(onClick = onOpenEntries, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Outlined.ListAlt, contentDescription = null)
+                    Icon(Icons.Rounded.ListAlt, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.view_entries))
                 }

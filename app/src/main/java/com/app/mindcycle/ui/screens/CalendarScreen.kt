@@ -2,6 +2,7 @@ package com.app.mindcycle.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +15,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ChevronLeft
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -29,9 +36,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,15 +53,19 @@ import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
 import com.app.mindcycle.ui.components.AdBanner
+import com.app.mindcycle.ui.theme.ForecastPink
+import com.app.mindcycle.ui.theme.MenstruationPink
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
-import org.threeten.bp.format.DateTimeFormatter
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+import org.threeten.bp.format.DateTimeFormatter as ThreeTenFormatter
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +81,9 @@ fun CalendarScreen(
     val showSheet = remember { mutableStateOf(false) }
     val startMonth = YearMonth.now().minusMonths(12)
     val endMonth = YearMonth.now().plusMonths(12)
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    var highlightedDate by remember { mutableStateOf(LocalDate.now()) }
+    val coroutineScope = rememberCoroutineScope()
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
         endMonth = endMonth,
@@ -81,31 +98,70 @@ fun CalendarScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ForecastSummaryCard(cycleForecast = cycleForecast)
-        HorizontalCalendar(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            state = calendarState,
-            dayContent = { day ->
-                val entry = entries.firstOrNull { it.date.toLocalDate().toString() == day.date.toString() }
-                CalendarDayCell(
-                    day = day,
-                    entry = entry,
-                    isPrediction = cycleForecast?.let {
-                        val windowStart = it.windowStart?.toJavaDate()
-                        val windowEnd = it.windowEnd?.toJavaDate()
-                        if (windowStart != null && windowEnd != null) {
-                            (day.date >= windowStart && day.date <= windowEnd)
-                        } else false
-                    } ?: false,
-                    onEntrySelected = {
-                        selectedEntry.value = entry
-                        showSheet.value = true
-                    },
-                    onAddEntry = { onNavigateToAddEntry(day.date.toString()) }
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        val target = currentMonth.minusMonths(1)
+                        currentMonth = target
+                        coroutineScope.launch { calendarState.animateScrollToMonth(target) }
+                    }) {
+                        Icon(Icons.Rounded.ChevronLeft, contentDescription = stringResource(id = R.string.back))
+                    }
+                    Text(
+                        text = currentMonth.format(DateTimeFormatter.ofPattern("LLLL yyyy", Locale.getDefault())).replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    IconButton(onClick = {
+                        val target = currentMonth.plusMonths(1)
+                        currentMonth = target
+                        coroutineScope.launch { calendarState.animateScrollToMonth(target) }
+                    }) {
+                        Icon(Icons.Rounded.ChevronRight, contentDescription = stringResource(id = R.string.next_month))
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalCalendar(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    state = calendarState,
+                    dayContent = { day ->
+                        val entry = entries.firstOrNull { it.date.toLocalDate().toString() == day.date.toString() }
+                        CalendarDayCell(
+                            day = day,
+                            entry = entry,
+                            isPrediction = cycleForecast?.let {
+                                val windowStart = it.windowStart?.toJavaDate()
+                                val windowEnd = it.windowEnd?.toJavaDate()
+                                if (windowStart != null && windowEnd != null) {
+                                    (day.date >= windowStart && day.date <= windowEnd)
+                                } else false
+                            } ?: false,
+                            isSelected = day.date == highlightedDate,
+                            onEntrySelected = {
+                                selectedEntry.value = entry
+                                showSheet.value = true
+                                highlightedDate = day.date
+                            },
+                            onAddEntry = {
+                                highlightedDate = day.date
+                                onNavigateToAddEntry(day.date.toString())
+                            }
+                        )
+                    }
                 )
             }
-        )
+        }
         ActionRow(onNavigateToEntriesList = onNavigateToEntriesList)
         Spacer(modifier = Modifier.height(8.dp))
         AdBanner(modifier = Modifier.fillMaxWidth())
@@ -138,7 +194,7 @@ private fun ForecastSummaryCard(cycleForecast: CycleForecast?) {
             if (cycleForecast == null || cycleForecast.insufficientData) {
                 Text(text = stringResource(id = R.string.insufficient_data_hint), style = MaterialTheme.typography.bodyMedium)
             } else {
-                val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
+                val formatter = ThreeTenFormatter.ofPattern("d MMM", Locale.getDefault())
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(text = stringResource(id = R.string.next_period), style = MaterialTheme.typography.labelMedium)
@@ -165,35 +221,61 @@ private fun CalendarDayCell(
     day: CalendarDay,
     entry: MoodEntry?,
     isPrediction: Boolean,
+    isSelected: Boolean,
     onEntrySelected: () -> Unit,
     onAddEntry: () -> Unit
 ) {
-    val background = when {
+    val menstruationHighlight = MenstruationPink
+    val today = LocalDate.now()
+    val baseColor = when {
         day.position != DayPosition.MonthDate -> MaterialTheme.colorScheme.surfaceVariant
-        isPrediction -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-        day.date == LocalDate.now() -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        entry?.isPeriod == true -> menstruationHighlight
+        day.date == today -> MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
         else -> Color.Transparent
     }
-    Column(
+    val animatedBackground by animateColorAsState(
+        targetValue = if (isSelected && day.position == DayPosition.MonthDate) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else baseColor,
+        label = "dayBackground"
+    )
+    val forecastBrush = if (isPrediction) {
+        Brush.verticalGradient(
+            listOf(ForecastPink.copy(alpha = 0.65f), Color.Transparent)
+        )
+    } else {
+        null
+    }
+    Box(
         modifier = Modifier
             .padding(2.dp)
             .clip(MaterialTheme.shapes.small)
-            .background(background)
+            .background(animatedBackground)
             .clickable(enabled = day.position == DayPosition.MonthDate) {
                 if (entry != null) onEntrySelected() else onAddEntry()
             }
-            .padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(vertical = 8.dp)
     ) {
-        Text(text = day.date.dayOfMonth.toString(), style = MaterialTheme.typography.bodyMedium)
-        entry?.let {
+        forecastBrush?.let { brush ->
             Box(
                 modifier = Modifier
-                    .height(6.dp)
-                    .width(24.dp)
-                    .clip(MaterialTheme.shapes.extraSmall)
-                    .background(colorForMood(it.moodLevel))
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.small)
+                    .background(brush = brush)
             )
+        }
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = day.date.dayOfMonth.toString(), style = MaterialTheme.typography.bodyMedium)
+            entry?.let {
+                Box(
+                    modifier = Modifier
+                        .height(6.dp)
+                        .width(24.dp)
+                        .clip(MaterialTheme.shapes.extraSmall)
+                        .background(colorForMood(it.moodLevel))
+                )
+            }
         }
     }
 }
@@ -223,7 +305,7 @@ private fun DayDetailsContent(
     onEdit: () -> Unit,
     onClose: () -> Unit
 ) {
-    val formatter = remember { DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.getDefault()) }
+    val formatter = remember { ThreeTenFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.getDefault()) }
     Column(
         modifier = Modifier
             .fillMaxWidth()

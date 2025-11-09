@@ -22,46 +22,48 @@ private val LightColorScheme = lightColorScheme(
     primaryContainer = SoftPink,
     onPrimaryContainer = TextPrimary,
     secondary = SecondaryPink,
-    onSecondary = TextPrimary,
+    onSecondary = Color.White,
     secondaryContainer = LightPink,
     onSecondaryContainer = TextPrimary,
     tertiary = AccentPink,
-    onTertiary = Color.White,
+    onTertiary = TextPrimary,
     tertiaryContainer = SoftPink,
     onTertiaryContainer = TextPrimary,
     background = BackgroundLight,
     onBackground = TextPrimary,
-    surface = BackgroundLight,
+    surface = SurfaceWhite,
     onSurface = TextPrimary,
-    surfaceVariant = LightPink,
-    onSurfaceVariant = TextSecondary
+    surfaceVariant = ForecastPink,
+    onSurfaceVariant = TextSecondary,
+    outline = SecondaryPink.copy(alpha = 0.4f)
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryPink,
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     primaryContainer = DarkPink,
     onPrimaryContainer = Color.White,
     secondary = SecondaryPink,
-    onSecondary = Color.White,
-    secondaryContainer = AccentPink,
-    onSecondaryContainer = Color.White,
-    tertiary = SoftPink,
-    onTertiary = TextPrimary,
+    onSecondary = Color.Black,
+    secondaryContainer = DarkPink,
+    onSecondaryContainer = TextOnDark,
+    tertiary = AccentPink,
+    onTertiary = Color.Black,
     tertiaryContainer = DarkPink,
-    onTertiaryContainer = Color.White,
+    onTertiaryContainer = TextOnDark,
     background = BackgroundDark,
-    onBackground = Color.White,
+    onBackground = TextOnDark,
     surface = BackgroundDark,
-    onSurface = Color.White,
+    onSurface = TextOnDark,
     surfaceVariant = Color(0xFF3D2B3D),
-    onSurfaceVariant = Color.White
+    onSurfaceVariant = TextOnDark,
+    outline = SecondaryPink.copy(alpha = 0.5f)
 )
 
 @Composable
 fun MindCycleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -9,9 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,24 +27,24 @@ import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
 import org.threeten.bp.LocalDateTime
-import androidx.compose.material.icons.filled.BatteryAlert
-import androidx.compose.material.icons.filled.Healing
-import androidx.compose.material.icons.filled.MoodBad
-import androidx.compose.material.icons.filled.SentimentDissatisfied
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.rounded.BatteryAlert
+import androidx.compose.material.icons.rounded.Healing
+import androidx.compose.material.icons.rounded.MoodBad
+import androidx.compose.material.icons.rounded.SentimentDissatisfied
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.FlashOn
+import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.NightsStay
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.material.icons.filled.SentimentSatisfied
-import androidx.compose.material.icons.filled.SentimentVerySatisfied
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Bloodtype
-import androidx.compose.material.icons.filled.Spa
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.Nightlight
-import androidx.compose.material.icons.filled.RemoveCircle
+import androidx.compose.material.icons.rounded.SentimentSatisfied
+import androidx.compose.material.icons.rounded.SentimentVerySatisfied
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Bloodtype
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material.icons.rounded.WbSunny
+import androidx.compose.material.icons.rounded.Nightlight
+import androidx.compose.material.icons.rounded.RemoveCircle
 import org.threeten.bp.format.DateTimeFormatter
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
@@ -82,14 +82,14 @@ fun AddEntryScreen(
     var showTimePicker by remember { mutableStateOf(false) }
 
     val symptomsList = listOf(
-        stringResource(R.string.symptom_fatigue) to Icons.Filled.BatteryAlert,
-        stringResource(R.string.symptom_pain) to Icons.Filled.Healing,
-        stringResource(R.string.symptom_irritation) to Icons.Filled.MoodBad,
-        stringResource(R.string.symptom_anxiety) to Icons.Filled.SentimentDissatisfied,
-        stringResource(R.string.symptom_headache) to Icons.Filled.Psychology,
-        stringResource(R.string.symptom_cramps) to Icons.Filled.FlashOn,
-        stringResource(R.string.symptom_bloating) to Icons.Filled.Air,
-        stringResource(R.string.symptom_insomnia) to Icons.Filled.NightsStay
+        stringResource(R.string.symptom_fatigue) to Icons.Rounded.BatteryAlert,
+        stringResource(R.string.symptom_pain) to Icons.Rounded.Healing,
+        stringResource(R.string.symptom_irritation) to Icons.Rounded.MoodBad,
+        stringResource(R.string.symptom_anxiety) to Icons.Rounded.SentimentDissatisfied,
+        stringResource(R.string.symptom_headache) to Icons.Rounded.Psychology,
+        stringResource(R.string.symptom_cramps) to Icons.Rounded.FlashOn,
+        stringResource(R.string.symptom_bloating) to Icons.Rounded.Air,
+        stringResource(R.string.symptom_insomnia) to Icons.Rounded.NightsStay
     )
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = entryDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
@@ -108,7 +108,7 @@ fun AddEntryScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.Rounded.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -118,7 +118,7 @@ fun AddEntryScreen(
                                 // TODO: Implement delete functionality
                             }
                         ) {
-                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete))
+                            Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.delete))
                         }
                     }
                 }
@@ -180,12 +180,12 @@ fun AddEntryScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     val moodOptions = listOf(
-                        MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
-                        MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
-                        MoodLevel.NEUTRAL to Icons.Filled.Psychology,
-                        MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
-                        MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
-                        MoodLevel.EXCELLENT to Icons.Filled.Star
+                        MoodLevel.VERY_BAD to Icons.Rounded.MoodBad,
+                        MoodLevel.BAD to Icons.Rounded.SentimentDissatisfied,
+                        MoodLevel.NEUTRAL to Icons.Rounded.Psychology,
+                        MoodLevel.GOOD to Icons.Rounded.SentimentSatisfied,
+                        MoodLevel.VERY_GOOD to Icons.Rounded.SentimentVerySatisfied,
+                        MoodLevel.EXCELLENT to Icons.Rounded.Star
                     )
 
                     FlowRow(
@@ -253,12 +253,12 @@ fun AddEntryScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     val phaseOptions = listOf(
-                        CyclePhase.MENSTRUATION to Icons.Filled.Bloodtype,
-                        CyclePhase.FOLLICULAR to Icons.Filled.Spa,
-                        CyclePhase.OVULATION to Icons.Filled.WbSunny,
-                        CyclePhase.LUTEAL to Icons.Filled.Nightlight,
-                        CyclePhase.PMS to Icons.Filled.MoodBad,
-                        CyclePhase.NONE to Icons.Filled.RemoveCircle
+                        CyclePhase.MENSTRUATION to Icons.Rounded.Bloodtype,
+                        CyclePhase.FOLLICULAR to Icons.Rounded.Spa,
+                        CyclePhase.OVULATION to Icons.Rounded.WbSunny,
+                        CyclePhase.LUTEAL to Icons.Rounded.Nightlight,
+                        CyclePhase.PMS to Icons.Rounded.MoodBad,
+                        CyclePhase.NONE to Icons.Rounded.RemoveCircle
                     )
 
                     FlowRow(
@@ -440,12 +440,12 @@ fun AddEntryScreen(
             // Display selected mood beautifully
             if (selectedMood != null) {
                 val moodIcons = mapOf(
-                    MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
-                    MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
-                    MoodLevel.NEUTRAL to Icons.Filled.Psychology,
-                    MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
-                    MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
-                    MoodLevel.EXCELLENT to Icons.Filled.Star
+                    MoodLevel.VERY_BAD to Icons.Rounded.MoodBad,
+                    MoodLevel.BAD to Icons.Rounded.SentimentDissatisfied,
+                    MoodLevel.NEUTRAL to Icons.Rounded.Psychology,
+                    MoodLevel.GOOD to Icons.Rounded.SentimentSatisfied,
+                    MoodLevel.VERY_GOOD to Icons.Rounded.SentimentVerySatisfied,
+                    MoodLevel.EXCELLENT to Icons.Rounded.Star
                 )
                 val moodLabels = mapOf(
                     MoodLevel.VERY_BAD to stringResource(R.string.mood_very_bad),
@@ -462,7 +462,7 @@ fun AddEntryScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = moodIcons[selectedMood] ?: Icons.Filled.Psychology,
+                        imageVector = moodIcons[selectedMood] ?: Icons.Rounded.Psychology,
                         contentDescription = moodLabels[selectedMood] ?: selectedMood.toString(),
                         tint = when (selectedMood) {
                             MoodLevel.VERY_BAD -> Color(0xFFD32F2F)
