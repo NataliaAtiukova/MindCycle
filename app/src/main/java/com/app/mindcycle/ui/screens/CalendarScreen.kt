@@ -82,6 +82,7 @@ import com.app.mindcycle.ui.theme.MenstruationPink
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -582,16 +583,43 @@ private fun buildMonthDays(yearMonth: YearMonth, firstDayOfWeek: java.time.DayOf
 }
 
 private fun buildMenstruationLabels(entries: List<MoodEntry>): Map<LocalDate, Int> {
-    val periodDates = entries.filter { it.isPeriod }.map { it.date.toLocalDate().toJavaLocalDate() }.sorted()
-    if (periodDates.isEmpty()) return emptyMap()
+    val periodEntries = entries
+        .filter { it.isPeriod }
+        .sortedBy { it.date }
+    if (periodEntries.isEmpty()) return emptyMap()
+
     val labels = mutableMapOf<LocalDate, Int>()
     var currentLabel = 0
-    var previousDate: LocalDate? = null
-    periodDates.forEach { date ->
-        currentLabel = if (previousDate == null || date.minusDays(1) != previousDate) 1 else currentLabel + 1
-        labels[date] = currentLabel
-        previousDate = date
+    var lastLabeledDate: LocalDate? = null
+
+    periodEntries.forEach { entry ->
+        val date = entry.date.toLocalDate().toJavaLocalDate()
+        val shouldStartNewCycle = entry.isPeriodStart || (lastLabeledDate != null && date.isBefore(lastLabeledDate))
+        if (shouldStartNewCycle) {
+            currentLabel = 0
+            lastLabeledDate = null
+        }
+
+        if (lastLabeledDate == null) {
+            currentLabel = 1
+            labels[date] = currentLabel
+            lastLabeledDate = date
+            return@forEach
+        }
+
+        val daysBetween = ChronoUnit.DAYS.between(lastLabeledDate, date).toInt()
+        if (daysBetween <= 0) {
+            labels[date] = currentLabel
+        } else {
+            (1..daysBetween).forEach { offset ->
+                val currentDate = lastLabeledDate!!.plusDays(offset.toLong())
+                currentLabel += 1
+                labels[currentDate] = currentLabel
+            }
+            lastLabeledDate = date
+        }
     }
+
     return labels
 }
 
