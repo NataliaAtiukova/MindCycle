@@ -148,6 +148,9 @@ fun AppNavigation(
                     uiState = uiState,
                     onNavigateToAddEntry = { date, isPeriodStart, isPeriodDay, symptom ->
                         val encodedSymptom = symptom?.let { Uri.encode(it) } ?: ""
+                        if (isPeriodStart) {
+                            yandexAdsManager.loadAndShowInterstitial(activity, activity)
+                        }
                         navController.navigate(
                             "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
                                 "${AppDestinations.DATE_ARG}=$date&" +
@@ -180,6 +183,9 @@ fun AppNavigation(
                     entries = uiState.entries,
                     cycleForecast = uiState.forecast,
                     onNavigateToAddEntry = { date, isPeriodStart, isPeriodDay ->
+                        if (isPeriodStart) {
+                            yandexAdsManager.loadAndShowInterstitial(activity, activity)
+                        }
                         navController.navigate(
                             "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1&" +
                                 "${AppDestinations.DATE_ARG}=$date&" +
@@ -188,6 +194,7 @@ fun AppNavigation(
                         )
                     },
                     onNavigateToEditEntry = { entryId ->
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
                         navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
                     },
                     onNavigateToEntriesList = {
@@ -291,6 +298,7 @@ fun AppNavigation(
                     entries = uiState.entries,
                     onDeleteEntry = onDeleteEntry,
                     onNavigateToEditEntry = { entryId ->
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
                         navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
                     },
                     onNavigateBack = {

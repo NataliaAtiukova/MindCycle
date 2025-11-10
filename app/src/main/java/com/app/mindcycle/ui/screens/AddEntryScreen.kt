@@ -26,6 +26,7 @@ import com.app.mindcycle.R
 import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
+import com.app.mindcycle.ui.components.AdBanner
 import org.threeten.bp.LocalDateTime
 import androidx.compose.material.icons.rounded.BatteryAlert
 import androidx.compose.material.icons.rounded.Healing
@@ -595,7 +596,15 @@ fun AddEntryScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            AdBanner(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             val allowAutoDefaults = entryToEdit == null && (defaultIsPeriodStart || defaultIsPeriodDay)
             Button(
